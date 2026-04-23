@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Urban Moto Gleam - Landing Page Premium
 
-## Getting Started
+Landing page Awwwards-style para un lavadero ficticio de motos en Bogotá, construida con:
 
-First, run the development server:
+- Next.js (App Router, SSR)
+- Chakra UI + Framer Motion
+- GSAP (`ScrollTrigger`, `ScrollToPlugin`, `SplitText`, `Draggable`)
+- `react-intersection-observer`
+- Datos dinámicos desde `data.json`
+
+## Ejecutar en local
+
+Instala dependencias y ejecuta el proyecto:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
+
+# o con npm
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura principal
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/page.tsx`: punto de entrada de la landing.
+- `src/components/LandingPage.tsx`: secciones completas y animaciones GSAP.
+- `app/providers.tsx`: provider global de Chakra.
+- `lib/theme.ts`: tema y tokens visuales urban-elegant.
+- `data.json`: contenido dinámico de empresa, servicios, precios y testimonios.
+- `public/icons/*.svg` y `public/logo-moto.svg`: assets SVG personalizados.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `pnpm dev`: desarrollo.
+- `pnpm build`: build producción.
+- `pnpm start`: correr build.
+- `pnpm lint`: linting.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notas de animación
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Se usa `SplitText` con fallback automático cuando el plugin no está disponible.
+- `Draggable` controla el slider Antes/Después.
+- `ScrollTrigger` aplica stagger/fade/parallax por sección.
 
-## Deploy on Vercel
+## Accesibilidad y performance
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Botones e inputs con `aria-label`.
+- Imágenes con `loading="lazy"` cuando aplica.
+- Arquitectura modular para facilitar optimizaciones posteriores.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

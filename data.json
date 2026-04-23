@@ -1,0 +1,226 @@
+{
+  "company": {
+    "name": "Urban Moto Gleam",
+    "slogan": "Brillo Urbano, Cuidado Ecológico",
+    "description": "Lavadero premium de motos en Bogotá especializado en detailing sostenible. Usamos productos biodegradables, tecnología de vapor y técnicas de protección avanzada para devolverle a tu moto un aspecto impecable con estilo urbano-elegante.",
+    "mission": "Cuidar tu moto como si fuera nuestra, respetando el medio ambiente y elevando el estándar del lavado en la ciudad.",
+    "vision": "Ser la referencia #1 en Colombia en cuidado premium y ecológico para motos urbanas y de alto cilindraje.",
+    "certifications": [
+      "Sello Verde Bogotá 2026 (simulado)",
+      "Uso Responsable de Agua - Protocolo EcoWash",
+      "Capacitación certificada en detailing de motocicletas"
+    ],
+    "location": "Calle 100 #15-20, Bogotá, Colombia",
+    "whatsapp": "+57 300 123 4567",
+    "email": "info@urbanmotogleam.com",
+    "phone": "+57 601 123 4567",
+    "hours": "Lunes a Sábado: 8:00 AM - 7:00 PM | Domingos: 9:00 AM - 4:00 PM",
+    "social": [
+      {
+        "name": "Instagram",
+        "url": "https://instagram.com/urbanmotogleam"
+      },
+      {
+        "name": "Facebook",
+        "url": "https://facebook.com/urbanmotogleam"
+      },
+      {
+        "name": "TikTok",
+        "url": "https://tiktok.com/@urbanmotogleam"
+      }
+    ]
+  },
+  "packages": [
+    {
+      "title": "Lavado Básico",
+      "description": "Limpieza exterior rápida y efectiva, ideal para mantenimiento semanal y uso urbano diario.",
+      "price": "COP $55.000",
+      "duration": "30-40 minutos",
+      "features": [
+        "Pre-lavado sin contacto",
+        "Shampoo ecológico pH neutro",
+        "Secado manual con microfibra premium",
+        "Gel de llantas básico"
+      ],
+      "icon": "basic-wash.svg"
+    },
+    {
+      "title": "Lavado Intermedio City+",
+      "description": "Paquete de transición para motos de uso frecuente con mayor nivel de suciedad y contaminación.",
+      "price": "COP $75.000",
+      "duration": "45-55 minutos",
+      "features": [
+        "Todo lo del Básico",
+        "Limpieza detallada de rines y guardabarros",
+        "Descontaminado ligero de pintura",
+        "Tratamiento hidrofóbico express"
+      ],
+      "icon": "premium-wash.svg"
+    },
+    {
+      "title": "Lavado Premium",
+      "description": "Lavado completo con protección y pulido ligero para un brillo más profundo y duradero.",
+      "price": "COP $105.000",
+      "duration": "60-75 minutos",
+      "features": [
+        "Todo lo City+",
+        "Pulido suave de pintura",
+        "Protección UV y cerámica express",
+        "Limpieza de cadena y transmisión",
+        "Acondicionador de plásticos"
+      ],
+      "icon": "premium-wash.svg"
+    },
+    {
+      "title": "Detailing Elite",
+      "description": "Servicio integral para devolver acabado showroom en motos deportivas, touring o de colección.",
+      "price": "COP $210.000",
+      "duration": "120-150 minutos",
+      "features": [
+        "Todo lo Premium",
+        "Detallado interior y carenados",
+        "Encerado premium o coating sellante",
+        "Restauración de plásticos y partes negras",
+        "Limpieza profunda de motor y chasis"
+      ],
+      "icon": "detailing.svg"
+    },
+    {
+      "title": "Motor & Chasis Pro",
+      "description": "Servicio técnico-estético enfocado en zonas mecánicas críticas para alto rendimiento y conservación.",
+      "price": "COP $165.000",
+      "duration": "90-110 minutos",
+      "features": [
+        "Desengrase motor ecológico",
+        "Limpieza vapor de chasis",
+        "Protección anticorrosiva",
+        "Limpieza y lubricación de cadena",
+        "Brillado de escapes y partes metálicas"
+      ],
+      "icon": "motor.svg"
+    },
+    {
+      "title": "Suscripción Mensual Prime",
+      "description": "Programa de fidelidad para mantener tu moto siempre impecable con prioridad y ahorro mensual.",
+      "price": "COP $320.000 / mes",
+      "duration": "Suscripción",
+      "features": [
+        "4 lavados Premium por mes",
+        "Prioridad en agenda",
+        "15% de descuento en servicios detailing",
+        "Limpieza de casco gratis (1 vez/mes)",
+        "Check visual preventivo básico"
+      ],
+      "icon": "subscription.svg"
+    }
+  ],
+  "benefits": [
+    "Productos 100% biodegradables y amigables con pintura",
+    "Técnicas sin rayones (microfibra premium + vapor + lavado controlado)",
+    "Equipo certificado en detailing de motocicletas",
+    "Garantía de satisfacción o relavado sin costo",
+    "Zona de espera urbana con WiFi, café y estaciones de carga",
+    "Agenda digital rápida por WhatsApp en menos de 2 minutos"
+  ],
+  "processSteps": [
+    {
+      "step": 1,
+      "title": "Recepción y diagnóstico",
+      "desc": "Inspección visual inicial, toma de registro y recomendación del paquete ideal."
+    },
+    {
+      "step": 2,
+      "title": "Pre-lavado técnico",
+      "desc": "Eliminación de suciedad pesada sin contacto para reducir riesgo de micro-rayones."
+    },
+    {
+      "step": 3,
+      "title": "Lavado principal",
+      "desc": "Aplicación de shampoo ecológico pH neutro y limpieza detallada por zonas."
+    },
+    {
+      "step": 4,
+      "title": "Detailing y protección",
+      "desc": "Pulido, restauración y sellado según el paquete seleccionado."
+    },
+    {
+      "step": 5,
+      "title": "Secado y acabado",
+      "desc": "Secado con microfibra premium, gel de llantas y toque final de brillo."
+    },
+    {
+      "step": 6,
+      "title": "Entrega premium",
+      "desc": "Revisión contigo y recomendaciones de mantenimiento entre lavados."
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Juan Pérez",
+      "text": "Mi moto quedó como nueva, ¡el brillo es impresionante!",
+      "rating": 5
+    },
+    {
+      "name": "María López",
+      "text": "Servicio rápido, ecológico y profesional. Recomendado 100%.",
+      "rating": 5
+    },
+    {
+      "name": "Carlos Ramírez",
+      "text": "El Detailing Elite dejó mi R15 espectacular, vale cada peso.",
+      "rating": 5
+    },
+    {
+      "name": "Laura Gómez",
+      "text": "Me encanta que usen productos ecológicos y el equipo es muy amable.",
+      "rating": 5
+    },
+    {
+      "name": "Andrés Mejía",
+      "text": "Reservé por WhatsApp, llegué puntual y en 1 hora ya estaba todo listo.",
+      "rating": 5
+    },
+    {
+      "name": "Natalia Suárez",
+      "text": "La limpieza de motor y chasis superó mis expectativas, trabajo muy fino.",
+      "rating": 5
+    }
+  ],
+  "faq": [
+    {
+      "question": "¿Trabajan con motos de alto cilindraje?",
+      "answer": "Sí, manejamos todo tipo de motos: bajo, medio y alto cilindraje, incluyendo deportivas y adventure."
+    },
+    {
+      "question": "¿Puedo esperar mientras lavan mi moto?",
+      "answer": "Sí, tenemos zona de espera cómoda con WiFi, café y TV."
+    },
+    {
+      "question": "¿Usan productos que dañen la pintura?",
+      "answer": "No, solo usamos productos pH neutro y biodegradables certificados."
+    },
+    {
+      "question": "¿Hay descuentos para clientes frecuentes?",
+      "answer": "Sí, contamos con suscripción mensual y beneficios por referidos."
+    },
+    {
+      "question": "¿Atienden sin cita previa?",
+      "answer": "Sí, aunque recomendamos reservar para asegurar horario y evitar tiempos de espera."
+    }
+  ],
+  "images": {
+    "hero": "/video/hero.webm",
+    "beforeAfter": {
+      "before": "/img/despuess.webp",
+      "after": "/img/antess.webp"
+    },
+    "gallery": [
+      "https://images.unsplash.com/photo-1520430715151-3f9ee314b87a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://img.freepik.com/foto-gratis/vista-angulo-superior-motociclista-recortado-pulir-tuberia-su-motocicleta_1098-19056.jpg?t=st=1772633549~exp=1772637149~hmac=dd4f25624f4d26301dcb13d1f369bd383b00a11fd370d8983ae43af53100c735&w=1480",
+      "https://img.freepik.com/fotos-premium/lave-motocicleta-tunel-lavado-pistola-agua-alta-presion_55997-2025.jpg",
+      "https://img.freepik.com/fotos-premium/limpieza-moto-taller-lavado-autos_55997-2138.jpg",
+      "https://img.freepik.com/fotos-premium/lave-moto-taller-lavado-autos_55997-2137.jpg",
+      "https://img.freepik.com/fotos-premium/motociclistas-usan-panos-microfibra-amarillos-limpiar-venta-al-menor-motocicletas_330609-2187.jpg"
+    ]
+  }
+}
