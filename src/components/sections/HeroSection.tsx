@@ -44,7 +44,7 @@ export function HeroSection({
       <Box position="absolute" inset={0} bg="radial-gradient(circle at 12% 25%, rgba(29,214,193,0.2), transparent 36%), radial-gradient(circle at 85% 10%, rgba(87,182,255,0.24), transparent 33%)" mixBlendMode="screen" />
 
       <Container maxW="container.xl" position="relative" zIndex={2}>
-        <VStack align="start" spacing={7} py={{ base: 14, md: 24 }}>
+        <VStack align="start" spacing={7} py={{ base: 14,}}>
           <Text
             letterSpacing="0.14em"
             color="urban.100"
@@ -63,10 +63,9 @@ export function HeroSection({
           <Heading
             ref={heroTitleRef}
             className="hero-title"
-            fontSize={{ base: "4.2rem", md: "6.2rem", lg: "7.5rem", xl: "8.3rem", "2xl": "9.2rem" }}
-            lineHeight={{ base: 0.84, md: 0.82 }}
+            fontSize={{ base: "3.2rem", sm: "4rem", md: "5rem", lg: "6rem", xl: "7rem", "2xl": "8rem" }}
+            lineHeight={{ base: 0.9, md: 0.82 }}
             textTransform="uppercase"
-            maxW={{ base: "100%", md: "9.2ch", lg: "8.2ch", xl: "19ch" }}
             fontWeight="400"
             letterSpacing="0.02em"
           >
@@ -84,15 +83,19 @@ export function HeroSection({
 
           <HStack
             data-animate
-            spacing={5}
-            pt={2}
+            spacing={{ base: 3, md: 5 }}
+            pt={{ base: 4, md: 2 }}
             color="rgba(246,251,255,0.76)"
-            fontSize={{ base: "sm", md: "md" }}
+            fontSize={{ base: "sm", sm: "md" }}
             fontWeight="500"
             flexWrap="wrap"
+            justifyContent={{ base: "center", md: "start" }}
+            w="full"
           >
             <Text>Sin rayones</Text>
+            <Text>•</Text>
             <Text>Biodegradable</Text>
+            <Text>•</Text>
             <Text>Acabado showroom</Text>
           </HStack>
         </VStack>
