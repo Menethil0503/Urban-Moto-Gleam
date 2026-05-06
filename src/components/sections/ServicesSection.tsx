@@ -1,5 +1,5 @@
-import { Box, Card, CardBody, Container, Grid, Heading, List, ListIcon, ListItem, SimpleGrid, Stack, Text, VStack, chakra } from "@chakra-ui/react";
-import { FaCheckCircle } from "react-icons/fa";
+import { Box, Card, CardBody, Container, Grid, Heading, List, ListIcon, ListItem, SimpleGrid, Stack, Text, VStack, chakra, Icon, Center } from "@chakra-ui/react";
+import { FaCheckCircle, FaShower, FaShieldAlt, FaStar, FaCog, FaMotorcycle, FaGem } from "react-icons/fa";
 import { LandingData } from "./types";
 
 type ServicesSectionProps = {
@@ -7,6 +7,14 @@ type ServicesSectionProps = {
   packages: LandingData["packages"];
   benefits: LandingData["benefits"];
   company: LandingData["company"];
+};
+
+const getPackageIcon = (iconName: string) => {
+  if (iconName.includes("basic")) return FaShower;
+  if (iconName.includes("premium")) return FaShieldAlt;
+  if (iconName.includes("detailing")) return FaGem;
+  if (iconName.includes("motor")) return FaCog;
+  return FaMotorcycle;
 };
 
 export function ServicesSection({ servicesGridRef, packages, benefits, company }: ServicesSectionProps) {
@@ -46,18 +54,17 @@ export function ServicesSection({ servicesGridRef, packages, benefits, company }
                     >
                       0{index + 1}
                     </Text>
-                    <chakra.img
+                    <Center
                       className="package-icon"
-                      src={`/icons/${pkg.icon}`}
-                      alt={pkg.title}
                       h="72px"
                       w="72px"
-                      loading="lazy"
                       borderRadius="xl"
-                      p={2}
                       bg="rgba(87,182,255,0.12)"
-                      style={{ filter: "drop-shadow(0 0 12px rgba(87,182,255,0.35))" }}
-                    />
+                      style={{ filter: "drop-shadow(0 0 12px rgba(0,191,255,0.25))" }}
+                      border="1px solid rgba(0,191,255,0.2)"
+                    >
+                      <Icon as={getPackageIcon(pkg.icon)} boxSize="36px" color="urban.400" />
+                    </Center>
                     <Heading fontSize="2xl" lineHeight={1.05}>{pkg.title}</Heading>
                     <Text color="rgba(246,251,255,0.77)">{pkg.description}</Text>
                     <Text color="rgba(246,251,255,0.7)">Duración: {pkg.duration}</Text>

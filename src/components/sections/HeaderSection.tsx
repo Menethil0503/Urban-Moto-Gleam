@@ -1,5 +1,5 @@
-import { Box, Button, Flex, HStack } from "@chakra-ui/react";
-import Image from "next/image";
+import { Box, Button, Flex, HStack, Text, Icon } from "@chakra-ui/react";
+import { FaMotorcycle } from "react-icons/fa";
 import { ReactNode } from "react";
 import { NavItem } from "./types";
 
@@ -31,9 +31,22 @@ export function HeaderSection({ headerRef, logoRef, navItems, onNavigate, cta }:
       boxShadow="0 14px 44px rgba(3,6,12,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
     >
       <Flex align="center" justify="space-between" gap={4}>
-        <Box ref={logoRef} cursor="pointer" onClick={() => onNavigate("home")} aria-label="Ir al inicio Urban Moto Gleam">
-          <Image src="/logo-moto.svg" alt="Urban Moto Gleam" width={292} height={68} style={{ height: "40px", width: "auto" }} priority />
-        </Box>
+        <HStack ref={logoRef} cursor="pointer" onClick={() => onNavigate("home")} aria-label="Ir al inicio Urban Moto Gleam" spacing={2}>
+          <Icon as={FaMotorcycle} w={8} h={8} color="urban.500" />
+          <Text 
+            fontFamily="heading" 
+            fontWeight="bold" 
+            fontSize={{ base: "lg", md: "xl" }} 
+            color="white" 
+            letterSpacing="0.05em"
+            lineHeight="1"
+          >
+            URBAN MOTO
+            <Text as="span" display="block" color="urban.500" fontSize="xs" fontWeight="500" letterSpacing="0.15em">
+              GLEAM
+            </Text>
+          </Text>
+        </HStack>
 
         <HStack spacing={1.5} bg="rgba(87,182,255,0.07)" border="1px solid rgba(120,166,255,0.22)" borderRadius="full" px={1.5} py={1.5} display={{ base: "none", md: "flex" }}>
           {navItems.map((item) => (
