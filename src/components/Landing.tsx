@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, useDisclosure } from "@chakra-ui/react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ReactNode, useMemo, useRef } from "react";
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
 import { BeforeAfterSection } from "./sections/BeforeAfterSection";
+import { BookingModal } from "./sections/BookingModal";
 import { ContactSection } from "./sections/ContactSection";
 import { FaqSection } from "./sections/FaqSection";
 import { FooterSection } from "./sections/FooterSection";
@@ -24,7 +25,7 @@ import { LandingData } from "./sections/types";
 const navItems = [
   { label: "Home", id: "home" },
   { label: "Paquetes", id: "servicios" },
-  { label: "Proceso", id: "proceso" },
+  { label: "Pasos", id: "proceso" },
   { label: "Contacto", id: "contacto" },
 ];
 
@@ -39,7 +40,12 @@ type CTAButtonProps = {
   ariaLabel: string;
 };
 
-function CTAButton({ children, onClick, variant = "solid", ariaLabel }: CTAButtonProps) {
+function CTAButton({
+  children,
+  onClick,
+  variant = "solid",
+  ariaLabel,
+}: CTAButtonProps) {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const pulse = () => {
@@ -60,7 +66,7 @@ function CTAButton({ children, onClick, variant = "solid", ariaLabel }: CTAButto
         repeat: 1,
         duration: 0.24,
         ease: "power3.out",
-      }
+      },
     );
   };
 
@@ -90,7 +96,7 @@ function CTAButton({ children, onClick, variant = "solid", ariaLabel }: CTAButto
 function updateReveal(
   sliderRef: React.MutableRefObject<HTMLDivElement | null>,
   afterLayerRef: React.MutableRefObject<HTMLDivElement | null>,
-  handleRef: React.MutableRefObject<HTMLDivElement | null>
+  handleRef: React.MutableRefObject<HTMLDivElement | null>,
 ) {
   if (!sliderRef.current || !afterLayerRef.current || !handleRef.current) {
     return;
@@ -100,12 +106,14 @@ function updateReveal(
   const layerRect = afterLayerRef.current.getBoundingClientRect();
   const handleRect = handleRef.current.getBoundingClientRect();
 
-  const width = layerRect.width || sliderRect.width || sliderRef.current.clientWidth;
+  const width =
+    layerRect.width || sliderRect.width || sliderRef.current.clientWidth;
   if (width <= 0) {
     return;
   }
 
-  const dividerCenter = handleRect.left - sliderRect.left + handleRect.width / 2;
+  const dividerCenter =
+    handleRect.left - sliderRect.left + handleRect.width / 2;
   const boundedCenter = clampProgress(dividerCenter / width) * width;
   const rightInset = Number(Math.max(0, width - boundedCenter).toFixed(2));
 
@@ -115,6 +123,8 @@ function updateReveal(
 }
 
 export function Landing({ data }: { data: LandingData }) {
+  const { isOpen: isBookingOpen, onOpen: onBookingOpen, onClose: onBookingClose } = useDisclosure();
+
   const headerRef = useRef<HTMLDivElement | null>(null);
   const logoRef = useRef<HTMLDivElement | null>(null);
   const heroTitleRef = useRef<HTMLHeadingElement | null>(null);
@@ -142,23 +152,31 @@ export function Landing({ data }: { data: LandingData }) {
       Facebook: FaFacebookF,
       TikTok: FaTiktok,
     }),
-    []
+    [],
   );
 
   const heroIsVideo = /\.(webm|mp4|ogg)$/i.test(data.images.hero);
 
   useGSAP(
     () => {
-      let splitTextInstance: { chars: Element[]; revert: () => void } | null = null;
+      let splitTextInstance: { chars: Element[]; revert: () => void } | null =
+        null;
       let splitIsMounted = true;
       let resizeHandler: (() => void) | null = null;
       let pointerMoveHandler: ((event: PointerEvent) => void) | null = null;
       let draggableInstances: Draggable[] = [];
 
-      const packageHandlers: Array<{ card: HTMLElement; enter: () => void; leave: () => void }> = [];
+      const packageHandlers: Array<{
+        card: HTMLElement;
+        enter: () => void;
+        leave: () => void;
+      }> = [];
       const mm = gsap.matchMedia();
 
-      const animateHeroTargets = (targets: Element[] | NodeListOf<Element>, reduceMotion: boolean) => {
+      const animateHeroTargets = (
+        targets: Element[] | NodeListOf<Element>,
+        reduceMotion: boolean,
+      ) => {
         gsap.fromTo(
           targets,
           {
@@ -173,7 +191,7 @@ export function Landing({ data }: { data: LandingData }) {
             stagger: reduceMotion ? 0 : { each: 0.022, from: "start" },
             duration: reduceMotion ? 0.01 : 1.12,
             ease: "expo.out",
-          }
+          },
         );
       };
 
@@ -182,7 +200,9 @@ export function Landing({ data }: { data: LandingData }) {
           return;
         }
 
-        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
 
         try {
           const mod = await import("gsap/SplitText");
@@ -200,7 +220,8 @@ export function Landing({ data }: { data: LandingData }) {
 
           animateHeroTargets(splitTextInstance.chars, reduceMotion);
         } catch {
-          const fallbackTargets = heroTitleRef.current?.querySelectorAll(".hero-word");
+          const fallbackTargets =
+            heroTitleRef.current?.querySelectorAll(".hero-word");
           if (fallbackTargets && fallbackTargets.length > 0) {
             animateHeroTargets(fallbackTargets, reduceMotion);
           }
@@ -248,7 +269,7 @@ export function Landing({ data }: { data: LandingData }) {
               headerRef.current,
               { y: -72, autoAlpha: reduceMotion ? 1 : 0 },
               { y: 0, autoAlpha: 1 },
-              0
+              0,
             );
           }
 
@@ -257,7 +278,7 @@ export function Landing({ data }: { data: LandingData }) {
               logoRef.current,
               { scale: 0.86, autoAlpha: 0 },
               { scale: 1, autoAlpha: 1, duration: 0.64, ease: "back.out(1.6)" },
-              0.1
+              0.1,
             );
 
             gsap.to(logoRef.current, {
@@ -270,12 +291,23 @@ export function Landing({ data }: { data: LandingData }) {
           }
 
           introTimeline
-            .fromTo(".hero-sub", { y: reduceMotion ? 0 : 34, autoAlpha: reduceMotion ? 1 : 0 }, { y: 0, autoAlpha: 1 }, 0.3)
+            .fromTo(
+              ".hero-sub",
+              { y: reduceMotion ? 0 : 34, autoAlpha: reduceMotion ? 1 : 0 },
+              { y: 0, autoAlpha: 1 },
+              0.3,
+            )
             .fromTo(
               ".hero-cta > *",
               { y: reduceMotion ? 0 : 32, autoAlpha: reduceMotion ? 1 : 0 },
-              { y: 0, autoAlpha: 1, stagger: reduceMotion ? 0 : 0.1, duration: reduceMotion ? 0.01 : 0.76, ease: "expo.out" },
-              0.44
+              {
+                y: 0,
+                autoAlpha: 1,
+                stagger: reduceMotion ? 0 : 0.1,
+                duration: reduceMotion ? 0.01 : 0.76,
+                ease: "expo.out",
+              },
+              0.44,
             );
 
           if (!reduceMotion) {
@@ -344,13 +376,15 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
           if (testimonialsSectionRef.current) {
             gsap.fromTo(
-              testimonialsSectionRef.current.querySelectorAll(".testimonials-track"),
+              testimonialsSectionRef.current.querySelectorAll(
+                ".testimonials-track",
+              ),
               { autoAlpha: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 28 },
               {
                 immediateRender: false,
@@ -365,11 +399,15 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
-          if (testimonialTrackRef.current && testimonialsSectionRef.current && !reduceMotion) {
+          if (
+            testimonialTrackRef.current &&
+            testimonialsSectionRef.current &&
+            !reduceMotion
+          ) {
             const marqueeTween = gsap.to(testimonialTrackRef.current, {
               xPercent: -50,
               ease: "none",
@@ -389,19 +427,21 @@ export function Landing({ data }: { data: LandingData }) {
           }
 
           if (gallerySectionRef.current && !reduceMotion) {
-            gsap.utils.toArray<HTMLElement>(".gallery-item").forEach((item, index) => {
-              gsap.to(item, {
-                yPercent: index % 2 === 0 ? -5 : 5,
-                ease: "none",
-                scrollTrigger: {
-                  trigger: gallerySectionRef.current,
-                  start: "top bottom",
-                  end: "bottom top",
-                  scrub: isDesktop ? 0.9 : 0.6,
-                  invalidateOnRefresh: true,
-                },
+            gsap.utils
+              .toArray<HTMLElement>(".gallery-item")
+              .forEach((item, index) => {
+                gsap.to(item, {
+                  yPercent: index % 2 === 0 ? -10 : 10,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: gallerySectionRef.current,
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: isDesktop ? 0.9 : 0.6,
+                    invalidateOnRefresh: true,
+                  },
+                });
               });
-            });
           }
 
           if (beforeAfterSectionRef.current) {
@@ -421,7 +461,7 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
@@ -442,13 +482,15 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
           if (contactSectionRef.current) {
             gsap.fromTo(
-              contactSectionRef.current.querySelectorAll(".contact-reveal:not([data-animate])"),
+              contactSectionRef.current.querySelectorAll(
+                ".contact-reveal:not([data-animate])",
+              ),
               { autoAlpha: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 22 },
               {
                 immediateRender: false,
@@ -463,7 +505,7 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
@@ -488,13 +530,17 @@ export function Landing({ data }: { data: LandingData }) {
                   once: true,
                   invalidateOnRefresh: true,
                 },
-              }
+              },
             );
           }
 
           if (processPinRef.current && processTrackRef.current) {
             if (!reduceMotion && isDesktop) {
-              const totalScroll = Math.max(processTrackRef.current.scrollWidth - processPinRef.current.offsetWidth, 0);
+              const totalScroll = Math.max(
+                processTrackRef.current.scrollWidth -
+                  processPinRef.current.offsetWidth,
+                0,
+              );
               gsap.to(processTrackRef.current, {
                 x: -totalScroll,
                 ease: "none",
@@ -526,7 +572,7 @@ export function Landing({ data }: { data: LandingData }) {
                     once: true,
                     invalidateOnRefresh: true,
                   },
-                }
+                },
               );
             }
           }
@@ -542,41 +588,49 @@ export function Landing({ data }: { data: LandingData }) {
             duration: 0,
           });
 
-          gsap.utils.toArray<HTMLElement>("[data-nav-section]").forEach((section) => {
-            ScrollTrigger.create({
-              trigger: section,
-              start: "top 36%",
-              end: "bottom 34%",
-              onToggle: (state) => {
-                const id = section.getAttribute("id");
-                if (!id || !state.isActive) {
-                  return;
-                }
+          gsap.utils
+            .toArray<HTMLElement>("[data-nav-section]")
+            .forEach((section) => {
+              ScrollTrigger.create({
+                trigger: section,
+                start: "top 36%",
+                end: "bottom 34%",
+                onToggle: (state) => {
+                  const id = section.getAttribute("id");
+                  if (!id || !state.isActive) {
+                    return;
+                  }
 
-                gsap.to("[data-nav-item]", {
-                  color: "#F6FBFF",
-                  backgroundColor: "transparent",
-                  duration: 0.25,
-                  overwrite: true,
-                });
+                  gsap.to("[data-nav-item]", {
+                    color: "#F6FBFF",
+                    backgroundColor: "transparent",
+                    duration: 0.25,
+                    overwrite: true,
+                  });
 
-                gsap.to(`[data-nav-item='${id}']`, {
-                  color: "#1DD6C1",
-                  backgroundColor: "rgba(29,214,193,0.14)",
-                  duration: 0.25,
-                  overwrite: true,
-                });
-              },
+                  gsap.to(`[data-nav-item='${id}']`, {
+                    color: "#1DD6C1",
+                    backgroundColor: "rgba(29,214,193,0.14)",
+                    duration: 0.25,
+                    overwrite: true,
+                  });
+                },
+              });
             });
-          });
-        }
+        },
       );
 
       if (sliderRef.current && afterLayerRef.current && handleRef.current) {
-        const sliderWidth = afterLayerRef.current.getBoundingClientRect().width || sliderRef.current.clientWidth;
+        const sliderWidth =
+          afterLayerRef.current.getBoundingClientRect().width ||
+          sliderRef.current.clientWidth;
         const handleWidth = handleRef.current.offsetWidth || 0;
         const maxX = Math.max(sliderWidth - handleWidth, 0);
-        const initialX = gsap.utils.clamp(0, maxX, sliderWidth * 0.56 - handleWidth / 2);
+        const initialX = gsap.utils.clamp(
+          0,
+          maxX,
+          sliderWidth * 0.56 - handleWidth / 2,
+        );
 
         gsap.set(handleRef.current, { x: initialX });
         updateReveal(sliderRef, afterLayerRef, handleRef);
@@ -588,7 +642,11 @@ export function Landing({ data }: { data: LandingData }) {
         });
 
         resizeHandler = () => {
-          if (!sliderRef.current || !afterLayerRef.current || !handleRef.current) {
+          if (
+            !sliderRef.current ||
+            !afterLayerRef.current ||
+            !handleRef.current
+          ) {
             return;
           }
 
@@ -596,15 +654,28 @@ export function Landing({ data }: { data: LandingData }) {
           const currentHandleRect = handleRef.current.getBoundingClientRect();
           const currentCenterRatio =
             currentSliderRect.width > 0
-              ? clampProgress((currentHandleRect.left - currentSliderRect.left + currentHandleRect.width / 2) / currentSliderRect.width)
+              ? clampProgress(
+                  (currentHandleRect.left -
+                    currentSliderRect.left +
+                    currentHandleRect.width / 2) /
+                    currentSliderRect.width,
+                )
               : 0.56;
 
-          const nextSliderWidth = afterLayerRef.current.getBoundingClientRect().width || sliderRef.current.clientWidth;
+          const nextSliderWidth =
+            afterLayerRef.current.getBoundingClientRect().width ||
+            sliderRef.current.clientWidth;
           const nextHandleWidth = handleRef.current.offsetWidth || 0;
           const nextMaxX = Math.max(nextSliderWidth - nextHandleWidth, 0);
-          const nextX = gsap.utils.clamp(0, nextMaxX, currentCenterRatio * nextSliderWidth - nextHandleWidth / 2);
+          const nextX = gsap.utils.clamp(
+            0,
+            nextMaxX,
+            currentCenterRatio * nextSliderWidth - nextHandleWidth / 2,
+          );
 
-          draggableInstances.forEach((instance) => instance.applyBounds({ minX: 0, maxX: nextMaxX }));
+          draggableInstances.forEach((instance) =>
+            instance.applyBounds({ minX: 0, maxX: nextMaxX }),
+          );
           gsap.set(handleRef.current, { x: nextX });
           updateReveal(sliderRef, afterLayerRef, handleRef);
           ScrollTrigger.refresh();
@@ -615,9 +686,19 @@ export function Landing({ data }: { data: LandingData }) {
 
       gsap.utils.toArray<HTMLElement>(".package-card").forEach((card) => {
         const icon = card.querySelector(".package-icon");
-        const yTo = gsap.quickTo(card, "y", { duration: 0.32, ease: "power3.out" });
-        const rotateTo = icon ? gsap.quickTo(icon, "rotation", { duration: 0.35, ease: "power3.out" }) : null;
-        const scaleTo = icon ? gsap.quickTo(icon, "scale", { duration: 0.35, ease: "power3.out" }) : null;
+        const yTo = gsap.quickTo(card, "y", {
+          duration: 0.32,
+          ease: "power3.out",
+        });
+        const rotateTo = icon
+          ? gsap.quickTo(icon, "rotation", {
+              duration: 0.35,
+              ease: "power3.out",
+            })
+          : null;
+        const scaleTo = icon
+          ? gsap.quickTo(icon, "scale", { duration: 0.35, ease: "power3.out" })
+          : null;
 
         const enter = () => {
           yTo(-9);
@@ -636,7 +717,10 @@ export function Landing({ data }: { data: LandingData }) {
         packageHandlers.push({ card, enter, leave });
       });
 
-      if (cursorGlowRef.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (
+        cursorGlowRef.current &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
         gsap.set(cursorGlowRef.current, {
           x: window.innerWidth * 0.45,
           y: window.innerHeight * 0.2,
@@ -658,7 +742,9 @@ export function Landing({ data }: { data: LandingData }) {
           yTo(y - 140);
         };
 
-        window.addEventListener("pointermove", pointerMoveHandler, { passive: true });
+        window.addEventListener("pointermove", pointerMoveHandler, {
+          passive: true,
+        });
       }
 
       return () => {
@@ -681,7 +767,7 @@ export function Landing({ data }: { data: LandingData }) {
         mm.revert();
       };
     },
-    { scope: pageRootRef }
+    { scope: pageRootRef },
   );
 
   const scrollToSection = (id: string) => {
@@ -708,7 +794,14 @@ export function Landing({ data }: { data: LandingData }) {
         logoRef={logoRef}
         navItems={navItems}
         onNavigate={scrollToSection}
-        cta={<CTAButton ariaLabel="Agendar servicio ahora" onClick={() => scrollToSection("contacto")}>Agenda Ahora</CTAButton>}
+        cta={
+          <CTAButton
+            ariaLabel="Agendar servicio ahora"
+            onClick={onBookingOpen}
+          >
+            Agenda Ahora
+          </CTAButton>
+        }
       />
 
       <HeroSection
@@ -718,21 +811,59 @@ export function Landing({ data }: { data: LandingData }) {
         heroTitleRef={heroTitleRef}
         heroVideoRef={heroVideoRef}
         heroImageRef={heroImageRef}
-        primaryCta={<CTAButton ariaLabel="Ver paquetes" onClick={() => scrollToSection("servicios")}>Ver paquetes</CTAButton>}
-        secondaryCta={<CTAButton ariaLabel="Reservar por WhatsApp" variant="outline" onClick={() => window.open(`https://wa.me/${data.company.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer")}>WhatsApp</CTAButton>}
+        primaryCta={
+          <CTAButton
+            ariaLabel="Ver paquetes"
+            onClick={() => scrollToSection("servicios")}
+          >
+            Ver paquetes
+          </CTAButton>
+        }
+        secondaryCta={
+          <CTAButton
+            ariaLabel="Reservar por WhatsApp"
+            variant="outline"
+            onClick={() =>
+              window.open(
+                `https://wa.me/${data.company.whatsapp.replace(/\D/g, "")}`,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            WhatsApp
+          </CTAButton>
+        }
       />
 
       <Box py={12} overflow="hidden" borderY="1px solid rgba(130,174,255,0.26)">
-        <Box className="magic-strip" whiteSpace="nowrap" fontFamily="heading" fontWeight="400" letterSpacing="0.08em" fontSize={{ base: "2.6rem", md: "5rem" }} color="urban.500">
-          LET&apos;S MAKE MAGIC • BRILLO URBANO • ECO DETAILING • LET&apos;S MAKE MAGIC • BRILLO URBANO •
+        <Box
+          className="magic-strip"
+          whiteSpace="nowrap"
+          fontFamily="heading"
+          fontWeight="400"
+          letterSpacing="0.08em"
+          fontSize={{ base: "2.6rem", md: "5rem" }}
+          color="urban.500"
+        >
+          LET&apos;S MAKE MAGIC • BRILLO URBANO • ECO DETAILING • LET&apos;S
+          MAKE MAGIC • BRILLO URBANO •
         </Box>
       </Box>
 
-      <ServicesSection servicesGridRef={servicesGridRef} packages={data.packages} benefits={data.benefits} company={data.company} />
+      <ServicesSection
+        servicesGridRef={servicesGridRef}
+        packages={data.packages}
+        benefits={data.benefits}
+        company={data.company}
+      />
 
       <ProcessSection processPinRef={processPinRef} processTrackRef={processTrackRef} processSteps={data.processSteps} />
 
-      <GallerySection gallerySectionRef={gallerySectionRef} images={data.images.gallery} />
+      {/* <GallerySection
+        gallerySectionRef={gallerySectionRef}
+        images={data.images.gallery}
+      /> */}
 
       <BeforeAfterSection
         beforeAfterSectionRef={beforeAfterSectionRef}
@@ -743,7 +874,10 @@ export function Landing({ data }: { data: LandingData }) {
         afterImage={data.images.beforeAfter.after}
       />
 
-      <PricingSection pricingTableRef={pricingTableRef} packageRows={packageRows} />
+      <PricingSection
+        pricingTableRef={pricingTableRef}
+        packageRows={packageRows}
+      />
 
       <TestimonialsSection
         testimonialsSectionRef={testimonialsSectionRef}
@@ -751,15 +885,21 @@ export function Landing({ data }: { data: LandingData }) {
         testimonials={data.testimonials}
       />
 
-      <FaqSection faqSectionRef={faqSectionRef} faq={data.faq} />
+      <FaqSection faqSectionRef={faqSectionRef} data={data} />
 
       <ContactSection
         contactSectionRef={contactSectionRef}
         company={data.company}
-        cta={<CTAButton ariaLabel="Enviar formulario de contacto">Enviar solicitud</CTAButton>}
+        cta={
+          <CTAButton ariaLabel="Enviar formulario de contacto">
+            Enviar solicitud
+          </CTAButton>
+        }
       />
 
       <FooterSection company={data.company} socialIcons={socialIcons} />
+
+      <BookingModal isOpen={isBookingOpen} onClose={onBookingClose} packages={data.packages} />
     </div>
   );
 }
