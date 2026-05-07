@@ -19,7 +19,7 @@ import {
   useToast,
   IconButton
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { PackageItem } from "./types";
 
@@ -33,16 +33,15 @@ export function BookingModal({ isOpen, onClose, packages }: BookingModalProps) {
   const toast = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [occupiedDays, setOccupiedDays] = useState<number[]>([]);
 
   // Generate some dummy occupied days when the month changes
-  useEffect(() => {
+  const occupiedDays = useMemo(() => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const randomOccupied = [];
     for (let i = 0; i < 8; i++) {
         randomOccupied.push(Math.floor(Math.random() * daysInMonth) + 1);
     }
-    setOccupiedDays(randomOccupied);
+    return randomOccupied;
   }, [currentMonth]);
 
   const handleBookingSubmit = (e: React.FormEvent) => {
@@ -170,7 +169,7 @@ export function BookingModal({ isOpen, onClose, packages }: BookingModalProps) {
             <VStack spacing={6} align="stretch">
               <FormControl isRequired>
                 <FormLabel color="urban.100" fontSize="sm">Nombre Completo</FormLabel>
-                <Input placeholder="Escribe tu nombre" _focus={{ borderColor: "urban.500", boxShadow: "none" }} borderRadius="xl" />
+                <Input onChange={(e) => e.target.value = e.target.value.replace(/[0-9]/g, '')} placeholder="Escribe tu nombre" _focus={{ borderColor: "urban.500", boxShadow: "none" }} borderRadius="xl" />
               </FormControl>
 
               <FormControl isRequired>
