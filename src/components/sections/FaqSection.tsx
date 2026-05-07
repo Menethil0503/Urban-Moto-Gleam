@@ -1,5 +1,5 @@
 import { Box, Container, Input, Button, VStack, HStack, Text, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { SectionTitle } from "./SectionTitle";
 import { LandingData, PackageItem, FaqItem } from "./types";
 import { FaRobot, FaPaperPlane, FaCommentDots, FaTimes } from "react-icons/fa";
@@ -16,6 +16,13 @@ export function FaqSection({ faqSectionRef, data: landingData }: FaqSectionProps
     { role: "bot", text: "¡Hola! Soy tu asesor de Urban Moto Gleam. ¿En qué te puedo ayudar sobre nuestros servicios de lavado hoy?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading, isOpen]);
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -126,7 +133,7 @@ export function FaqSection({ faqSectionRef, data: landingData }: FaqSectionProps
           <HStack bg="rgba(0, 0, 0, 0.3)" p={4} justifyContent="space-between" borderBottom="1px solid rgba(120,166,255,0.2)">
             <HStack>
               <Box color="urban.500"><FaRobot size={22} /></Box>
-              <Text fontWeight="bold" color="white" fontSize="md">Motor IA</Text>
+              <Text fontWeight="bold" color="white" fontSize="md">Bob el Bicker</Text>
             </HStack>
             <Button 
               size="sm" 
@@ -161,13 +168,14 @@ export function FaqSection({ faqSectionRef, data: landingData }: FaqSectionProps
               </HStack>
             ))}
             {isLoading && (
-               <HStack maxW="85%" alignSelf="flex-start">
-                 <Box color="urban.500" mt={1}><FaRobot size={18} /></Box>
-                 <Box bg="rgba(25, 45, 75, 0.8)" px={4} py={3} borderRadius="2xl" borderBottomLeftRadius="sm">
-                   <Text fontSize="sm" color="white" className="loading-dots">...</Text>
-                 </Box>
-               </HStack>
+              <HStack maxW="85%" alignSelf="flex-start">
+                <Box color="urban.500" mt={1}><FaRobot size={18} /></Box>
+                <Box bg="rgba(25, 45, 75, 0.8)" px={4} py={3} borderRadius="2xl" borderBottomLeftRadius="sm">
+                  <Text fontSize="sm" color="white" className="loading-dots">...</Text>
+                </Box>
+              </HStack>
             )}
+            <div ref={messagesEndRef} />
           </VStack>
           
           {/* Input de Mensaje */}
