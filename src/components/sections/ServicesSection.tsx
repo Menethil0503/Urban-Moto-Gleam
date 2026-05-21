@@ -1,5 +1,5 @@
 import { Box, Card, CardBody, Container, Grid, Heading, List, ListIcon, ListItem, SimpleGrid, Stack, Text, VStack, chakra, Icon, Center } from "@chakra-ui/react";
-import { FaCheckCircle, FaShower, FaShieldAlt, FaStar, FaCog, FaMotorcycle, FaGem } from "react-icons/fa";
+import { FaCalendarCheck, FaCheckCircle, FaShower, FaShieldAlt, FaCog, FaMotorcycle, FaGem } from "react-icons/fa";
 import { LandingData } from "./types";
 
 type ServicesSectionProps = {
@@ -7,6 +7,7 @@ type ServicesSectionProps = {
   packages: LandingData["packages"];
   benefits: LandingData["benefits"];
   company: LandingData["company"];
+  onPackageClick: (packageTitle: string) => void;
 };
 
 const getPackageIcon = (iconName: string) => {
@@ -14,10 +15,11 @@ const getPackageIcon = (iconName: string) => {
   if (iconName.includes("premium")) return FaShieldAlt;
   if (iconName.includes("detailing")) return FaGem;
   if (iconName.includes("motor")) return FaCog;
+  if (iconName.includes("subscription")) return FaCalendarCheck;
   return FaMotorcycle;
 };
 
-export function ServicesSection({ servicesGridRef, packages, benefits, company }: ServicesSectionProps) {
+export function ServicesSection({ servicesGridRef, packages, benefits, company, onPackageClick }: ServicesSectionProps) {
   return (
     <>
       <Container id="servicios" data-nav-section maxW="container.xl" py={{ base: 16, md: 24 }}>
@@ -42,6 +44,27 @@ export function ServicesSection({ servicesGridRef, packages, benefits, company }
                 borderRadius="2xl"
                 overflow="hidden"
                 boxShadow="0 18px 44px rgba(0,0,0,0.28)"
+                cursor="pointer"
+                role="button"
+                tabIndex={0}
+                aria-label={`Agendar ${pkg.title}`}
+                transition="transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease"
+                _hover={{
+                  transform: "translateY(-4px)",
+                  borderColor: "rgba(0,191,255,0.55)",
+                  boxShadow: "0 22px 48px rgba(0,0,0,0.36)",
+                }}
+                _focusVisible={{
+                  outline: "2px solid #00BFFF",
+                  outlineOffset: "3px",
+                }}
+                onClick={() => onPackageClick(pkg.title)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onPackageClick(pkg.title);
+                  }
+                }}
               >
                 <CardBody>
                   <VStack align="start" spacing={4}>

@@ -27,21 +27,27 @@ type BookingModalProps = {
   isOpen: boolean;
   onClose: () => void;
   packages: PackageItem[];
+  selectedPackageTitle?: string;
 };
 
-export function BookingModal({ isOpen, onClose, packages }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, packages, selectedPackageTitle }: BookingModalProps) {
   const toast = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedPackage, setSelectedPackage] = useState(selectedPackageTitle ?? "");
 
   // Generate some dummy occupied days when the month changes
   const occupiedDays = useMemo(() => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-    const randomOccupied = [];
-    for (let i = 0; i < 8; i++) {
-        randomOccupied.push(Math.floor(Math.random() * daysInMonth) + 1);
+    const occupiedDaysSet = new Set<number>();
+    let seed = currentMonth.getFullYear() * 12 + currentMonth.getMonth() + 1;
+
+    while (occupiedDaysSet.size < Math.min(8, daysInMonth)) {
+      seed = (seed * 1664525 + 1013904223) % 2147483647;
+      occupiedDaysSet.add((seed % daysInMonth) + 1);
     }
-    return randomOccupied;
+
+    return Array.from(occupiedDaysSet).sort((left, right) => left - right);
   }, [currentMonth]);
 
   const handleBookingSubmit = (e: React.FormEvent) => {
@@ -194,7 +200,15 @@ export function BookingModal({ isOpen, onClose, packages }: BookingModalProps) {
 
                 <FormControl isRequired>
                   <FormLabel color="urban.100" fontSize="sm">Servicio / Paquete</FormLabel>
-                  <Select placeholder="¿Qué servicio deseas?" _focus={{ borderColor: "urban.500", boxShadow: "none" }} borderRadius="xl" bg="rgba(10,15,30,0.4)">
+                    <Select
+                      value={selectedPackage}
+                      onChange={(event) => setSelectedPackage(event.target.value)}
+                      placeholder="¿Qué servicio deseas?"
+                      _focus={{ borderColor: "urban.500", boxShadow: "none" }}
+                      borderRadius="xl"
+                      bg="rgba(10,15,30,0.4)"
+                      required
+                    >
                     {packages.map(pkg => (
                       <option key={pkg.title} value={pkg.title} style={{background: "#0f1c37"}}>{pkg.title}</option>
                     ))}

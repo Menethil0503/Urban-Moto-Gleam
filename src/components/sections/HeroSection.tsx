@@ -81,7 +81,7 @@ export function HeroSection({
             {secondaryCta}
           </HStack>
 
-          <HStack
+          {/* <HStack
             data-animate
             spacing={{ base: 3, md: 5 }}
             pt={{ base: 4, md: 2 }}
@@ -97,7 +97,7 @@ export function HeroSection({
             <Text>Biodegradable</Text>
             <Text>•</Text>
             <Text>Acabado showroom</Text>
-          </HStack>
+          </HStack> */}
         </VStack>
       </Container>
 

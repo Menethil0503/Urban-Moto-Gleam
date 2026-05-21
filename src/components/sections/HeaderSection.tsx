@@ -18,20 +18,28 @@ export function HeaderSection({ headerRef, logoRef, navItems, onNavigate, cta }:
       ref={headerRef}
       position="fixed"
       top={3}
-      left="50%"
-      transform="translateX(-50%)"
+      left={0}
+      right={0}
+      px={{ base: 2, md: 4, lg: 6 }}
       zIndex={40}
-      w={{ base: "96%", lg: "93%" }}
-      bg="linear-gradient(140deg, rgba(8,16,31,0.82), rgba(11,21,40,0.62))"
-      border="1px solid rgba(120,166,255,0.3)"
-      backdropFilter="blur(14px)"
-      borderRadius="full"
-      px={{ base: 4, md: 6 }}
-      py={{ base: 2, md: 2.5 }}
-      boxShadow="0 14px 44px rgba(3,6,12,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
+      display="flex"
+      justifyContent="center"
     >
-      <Flex align="center" justify="space-between" gap={4}>
-        <HStack ref={logoRef} cursor="pointer" onClick={() => onNavigate("home")} aria-label="Ir al inicio Urban Moto Gleam" spacing={2}>
+      <Flex
+        align="center"
+        justify="space-between"
+        gap={4}
+        w="full"
+        maxW="container.xl"
+        bg="linear-gradient(140deg, rgba(8,16,31,0.82), rgba(11,21,40,0.62))"
+        border="1px solid rgba(120,166,255,0.3)"
+        backdropFilter="blur(14px)"
+        borderRadius="full"
+        px={{ base: 4, md: 6 }}
+        py={{ base: 2, md: 2.5 }}
+        boxShadow="0 14px 44px rgba(3,6,12,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
+      >
+        <HStack ref={logoRef} cursor="pointer" onClick={() => onNavigate("home")} aria-label="Ir al inicio Urban Moto Gleam" spacing={2} flexShrink={0}>
           <Icon as={FaMotorcycle} w={8} h={8} color="urban.500" />
           <Text 
             fontFamily="heading" 
@@ -48,7 +56,7 @@ export function HeaderSection({ headerRef, logoRef, navItems, onNavigate, cta }:
           </Text>
         </HStack>
 
-        <HStack spacing={1.5} bg="rgba(87,182,255,0.07)" border="1px solid rgba(120,166,255,0.22)" borderRadius="full" px={1.5} py={1.5} display={{ base: "none", md: "flex" }}>
+        <HStack spacing={1.5} bg="rgba(87,182,255,0.07)" border="1px solid rgba(120,166,255,0.22)" borderRadius="full" px={1.5} py={1.5} display={{ base: "none", md: "flex" }} flexShrink={0}>
           {navItems.map((item) => (
             <Button
               key={item.id}
@@ -70,7 +78,7 @@ export function HeaderSection({ headerRef, logoRef, navItems, onNavigate, cta }:
           ))}
         </HStack>
 
-        {cta}
+        <Box flexShrink={0}>{cta}</Box>
       </Flex>
     </Box>
   );

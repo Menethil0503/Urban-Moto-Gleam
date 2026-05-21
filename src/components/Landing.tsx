@@ -6,14 +6,12 @@ import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ReactNode, useMemo, useRef } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
 import { BeforeAfterSection } from "./sections/BeforeAfterSection";
 import { BookingModal } from "./sections/BookingModal";
 import { ContactSection } from "./sections/ContactSection";
-import { FaqSection } from "./sections/FaqSection";
 import { FooterSection } from "./sections/FooterSection";
-import { GallerySection } from "./sections/GallerySection";
 import { HeaderSection } from "./sections/HeaderSection";
 import { HeroSection } from "./sections/HeroSection";
 import { ProcessSection } from "./sections/ProcessSection";
@@ -21,6 +19,7 @@ import { PricingSection } from "./sections/PricingSection";
 import { ServicesSection } from "./sections/ServicesSection";
 import { TestimonialsSection } from "./sections/TestimonialsSection";
 import { LandingData } from "./sections/types";
+import { FaqChatbot } from "./sections/FaqChatbot";
 
 const navItems = [
   { label: "Home", id: "home" },
@@ -124,6 +123,8 @@ function updateReveal(
 
 export function Landing({ data }: { data: LandingData }) {
   const { isOpen: isBookingOpen, onOpen: onBookingOpen, onClose: onBookingClose } = useDisclosure();
+  const [selectedBookingPackage, setSelectedBookingPackage] = useState<string | undefined>(undefined);
+  const [bookingModalKey, setBookingModalKey] = useState(0);
 
   const headerRef = useRef<HTMLDivElement | null>(null);
   const logoRef = useRef<HTMLDivElement | null>(null);
@@ -156,6 +157,12 @@ export function Landing({ data }: { data: LandingData }) {
   );
 
   const heroIsVideo = /\.(webm|mp4|ogg)$/i.test(data.images.hero);
+
+  const openBookingModal = (packageTitle?: string) => {
+    setSelectedBookingPackage(packageTitle);
+    setBookingModalKey((currentKey) => currentKey + 1);
+    onBookingOpen();
+  };
 
   useGSAP(
     () => {
@@ -787,6 +794,7 @@ export function Landing({ data }: { data: LandingData }) {
 
   return (
     <div ref={pageRootRef} className="urban-texture">
+      <FaqChatbot></FaqChatbot>
       <Box ref={cursorGlowRef} className="floating-glow" aria-hidden="true" />
 
       <HeaderSection
@@ -797,7 +805,7 @@ export function Landing({ data }: { data: LandingData }) {
         cta={
           <CTAButton
             ariaLabel="Agendar servicio ahora"
-            onClick={onBookingOpen}
+            onClick={() => openBookingModal()}
           >
             Agenda Ahora
           </CTAButton>
@@ -856,6 +864,7 @@ export function Landing({ data }: { data: LandingData }) {
         packages={data.packages}
         benefits={data.benefits}
         company={data.company}
+        onPackageClick={(packageTitle) => openBookingModal(packageTitle)}
       />
 
       <ProcessSection processPinRef={processPinRef} processTrackRef={processTrackRef} processSteps={data.processSteps} />
@@ -885,7 +894,7 @@ export function Landing({ data }: { data: LandingData }) {
         testimonials={data.testimonials}
       />
 
-      <FaqSection faqSectionRef={faqSectionRef} data={data} />
+      {/* <FaqSection faqSectionRef={faqSectionRef} data={data} /> */}
 
       <ContactSection
         contactSectionRef={contactSectionRef}
@@ -899,7 +908,13 @@ export function Landing({ data }: { data: LandingData }) {
 
       <FooterSection company={data.company} socialIcons={socialIcons} />
 
-      <BookingModal isOpen={isBookingOpen} onClose={onBookingClose} packages={data.packages} />
+      <BookingModal
+        key={bookingModalKey}
+        isOpen={isBookingOpen}
+        onClose={onBookingClose}
+        packages={data.packages}
+        selectedPackageTitle={selectedBookingPackage}
+      />
     </div>
   );
 }
