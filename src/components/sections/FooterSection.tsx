@@ -13,7 +13,18 @@ export function FooterSection({ company, socialIcons }: FooterSectionProps) {
     <Box as="footer" borderTop="1px solid rgba(120,166,255,0.26)" py={10}>
       <Container maxW="container.xl">
         <Flex justify="space-between" align={{ base: "start", md: "center" }} direction={{ base: "column", md: "row" }} gap={4}>
-          <Text color="rgba(246,251,255,0.72)">© {new Date().getFullYear()} {company.name}. Todos los derechos reservados.</Text>
+          <HStack spacing={3} flexWrap="wrap">
+            <Text color="rgba(246,251,255,0.72)">© {new Date().getFullYear()} {company.name}. Todos los derechos reservados.</Text>
+            <Link
+              href="/admin"
+              fontSize="sm"
+              color="rgba(246,251,255,0.5)"
+              textDecoration="underline"
+              _hover={{ color: "urban.400" }}
+            >
+              Panel de reservas
+            </Link>
+          </HStack>
           <HStack spacing={3}>
             {company.social.map((social) => {
               const Icon = socialIcons[social.name] ?? FaInstagram;
