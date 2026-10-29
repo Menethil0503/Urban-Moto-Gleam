@@ -35,9 +35,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# la plantilla sí se versiona: no contiene credenciales
+!.env.example
 
 # vercel
 .vercel
+
+# whatsapp-web.js (sesión vinculada y caché)
+/.wwebjs_auth
+/.wwebjs_cache
 
 # typescript
 *.tsbuildinfo
