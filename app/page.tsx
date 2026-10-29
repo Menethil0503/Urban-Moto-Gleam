@@ -1,24 +1,12 @@
-"use client";
+import { obtenerContenido } from "@/src/lib/contenido";
+import { HomeClient } from "./HomeClient";
 
-import { Landing } from "@/src/components/Landing";
-import data from "@/data.json";
-import { useSyncExternalStore } from "react";
-import { Providers } from "./providers";
+// La página depende de datos que cambian (reservas, contenido sembrado), así que
+// se renderiza en cada petición en lugar de generarse estáticamente.
+export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const isMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+export default async function Home() {
+  const contenido = await obtenerContenido();
 
-  if (!isMounted) {
-    return <div className="min-h-screen bg-black" suppressHydrationWarning />;
-  }
-
-  return (
-    <Providers>
-      <Landing data={data} />
-    </Providers>
-  );
+  return <HomeClient data={contenido} />;
 }
