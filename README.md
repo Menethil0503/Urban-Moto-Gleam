@@ -8,6 +8,9 @@ Landing page Awwwards-style para un lavadero ficticio de motos en Bogotá, const
 - `react-intersection-observer`
 - Datos dinámicos desde `data.json`
 
+> **📖 Instalación completa:** consulta [`INSTALACION.md`](./INSTALACION.md) para
+> requisitos, base de datos, variables de entorno, panel de administración y WhatsApp.
+
 ## Ejecutar en local
 
 Instala dependencias y ejecuta el proyecto:
