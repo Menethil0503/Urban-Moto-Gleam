@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Esquema MongoDB — Urban Moto Gleam</title>
+<style>
+  :root{
+    --bg:#070b18; --bg2:#0b1226; --card:#0f1c37; --card2:#0a1330;
+    --line:#1e2f52; --txt:#eaf4ff; --mut:#9fb2d3;
+    --cyan:#00bfff; --cyan2:#5adcff; --vio:#a78bfa; --em:#34d399; --amber:#fbbf24;
+    --rose:#fb7185;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 700px at 30% -10%,#123052 0%,#070b18 55%);color:var(--txt);
+       font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+  .wrap{max-width:1500px;margin:0 auto;padding:28px 20px 70px}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:6px;flex-wrap:wrap}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  h1{font-size:27px;margin:0;letter-spacing:.3px}
+  h1 small{display:block;color:var(--mut);font-weight:400;font-size:14px;margin-top:3px}
+  h2{font-size:19px;margin:38px 0 14px;display:flex;align-items:center;gap:11px;letter-spacing:.2px}
+  h2::before{content:"";width:4px;height:22px;border-radius:2px;background:linear-gradient(180deg,var(--cyan),var(--vio))}
+  h2 .sub{font-size:12px;color:var(--mut);font-weight:400;letter-spacing:0}
+  .tags{margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap}
+  .tag{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--mut)}
+  .tag b{color:var(--cyan2);font-weight:600}
+  .legend{display:flex;gap:18px;align-items:center;margin:16px 0 4px;font-size:12px;color:var(--mut);flex-wrap:wrap;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 16px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .sw{width:14px;height:5px;border-radius:3px;display:inline-block}
+  .sw.cyan{background:var(--cyan)}
+  .sw.vio{background:var(--vio)}
+  .sw.em{background:var(--em)}
+  .sw.amber{background:var(--amber)}
+  .chip{font-size:10px;padding:1.5px 7px;border-radius:999px;border:1px solid var(--line);color:var(--cyan2);background:rgba(0,191,255,.07);white-space:nowrap;display:inline-block}
+  .chip.vio,.chip.violeta{border-color:rgba(167,139,250,.45);color:var(--vio);background:rgba(167,139,250,.09)}
+  .chip.em{border-color:rgba(52,211,153,.45);color:var(--em);background:rgba(52,211,153,.09)}
+  .chip.amber{border-color:rgba(251,191,36,.45);color:var(--amber);background:rgba(251,191,36,.09)}
+  .chip.rose{border-color:rgba(251,113,133,.45);color:var(--rose);background:rgba(251,113,133,.09)}
+  .chip.gray{border-color:var(--line);color:var(--mut);background:rgba(159,178,211,.07)}
+
+  /* ── Diagrama Mermaid ── */
+  .diagram{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 16px;overflow:auto;min-height:120px}
+  .diagram .mermaid{display:block;margin:0}
+  .diagram svg{max-width:none !important;height:auto}
+  .diagram-hint{font-size:11.5px;color:var(--mut);text-align:right;margin-top:8px}
+  .diagram-error{display:none;color:var(--mut);font-size:13px;text-align:center;padding:14px}
+
+  /* ── Tarjetas de colección ── */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+        border-radius:14px;padding:14px 16px;transition:transform .12s,box-shadow .12s,border-color .12s}
+  .card:hover{transform:translateY(-2px);border-color:var(--cyan);box-shadow:0 14px 30px rgba(0,0,0,.45)}
+  .card .col-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .card .badge{width:10px;height:10px;border-radius:3px;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .card h3{font-size:15.5px;margin:0;letter-spacing:.2px;color:#fff;font-family:ui-monospace,Consolas,monospace}
+  .card.type-content .badge{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .card.type-trans .badge{background:var(--em);box-shadow:0 0 8px var(--em)}
+  .card.type-chat .badge{background:var(--vio);box-shadow:0 0 8px var(--vio)}
+  .card.type-future .badge{background:var(--mut)}
+  .card.type-future{opacity:.62;border-style:dashed}
+  .card .col-role{font-size:11.5px;color:var(--mut);margin:5px 0 10px 19px}
+  .card ul{list-style:none;margin:0;padding:0}
+  .card li{font-size:12px;line-height:1.72;color:#cfe0f7;border-top:1px dashed rgba(30,47,82,.8);padding:3px 2px;display:flex;justify-content:space-between;gap:9px;align-items:baseline}
+  .card li:first-child{border-top:none}
+  .card li .t{color:var(--mut);font-size:11px;white-space:nowrap}
+
+  /* ── Tablas detalladas ── */
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:18px}
+  .tablewrap .thead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--card2);border-bottom:1px solid var(--line)}
+  .tablewrap .thead h3{margin:0;font-size:15px;font-family:ui-monospace,Consolas,monospace;color:#fff}
+  .tablewrap .thead .role{font-size:11.5px;color:var(--mut)}
+  table.det{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.det th{background:rgba(0,191,255,.05);color:var(--cyan2);font-weight:600;text-align:left;
+               padding:8px 12px;border-bottom:1px solid var(--line);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px}
+  table.det td{padding:7px 12px;border-bottom:1px solid rgba(30,47,82,.55);color:#cfe0f7;vertical-align:top}
+  table.det tr:last-child td{border-bottom:none}
+  table.det tr:hover td{background:rgba(0,191,255,.035)}
+  table.det td.f{font-family:ui-monospace,Consolas,monospace;color:#fff;font-weight:600;white-space:nowrap}
+  table.det td.ty{font-family:ui-monospace,Consolas,monospace;color:var(--vio);font-size:11.5px;white-space:nowrap}
+  table.det td.d{color:var(--mut);font-size:11.5px}
+  .pk{color:var(--amber);font-weight:700;font-size:10.5px}
+
+  /* ── Tablas resumen ── */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+  .cardinfo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .cardinfo h4{margin:0 0 10px;font-size:14px;color:var(--cyan2)}
+  .cardinfo ul{margin:0;padding-left:18px;color:#cfe0f7;font-size:12.5px;line-height:1.75}
+  .cardinfo code{background:rgba(0,191,255,.08);border:1px solid rgba(0,191,255,.18);border-radius:5px;padding:1px 6px;font-size:11.5px;color:var(--cyan2)}
+  table.rels{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.rels th,table.rels td{border:1px solid var(--line);padding:8px 11px;text-align:left}
+  table.rels th{background:var(--card2);color:var(--cyan2);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px}
+  table.rels td{color:#cfe0f7}
+  table.rels tr:hover td{background:rgba(0,191,255,.035)}
+  table.rels code{font-family:ui-monospace,Consolas,monospace;color:var(--cyan2);font-size:11.5px}
+  .rel-badge{font-size:10px;padding:1.5px 9px;border-radius:999px;background:rgba(52,211,153,.12);color:var(--em);border:1px solid rgba(52,211,153,.3);white-space:nowrap}
+  .rel-badge.off{background:rgba(159,178,211,.08);color:var(--mut);border-color:var(--line)}
+  .note{background:linear-gradient(90deg,rgba(0,191,255,.09),rgba(167,139,250,.09));border:1px dashed var(--cyan);
+        border-radius:12px;padding:12px 16px;font-size:12.5px;color:#cfe0f7;margin-top:14px;line-height:1.7}
+  footer{margin-top:34px;color:var(--mut);font-size:11.5px;text-align:center;border-top:1px solid var(--line);padding-top:18px}
+  .print-btn{position:fixed;right:18px;bottom:18px;background:var(--cyan);color:#07203a;border:none;
+             padding:11px 17px;border-radius:999px;font-weight:700;cursor:pointer;
+             box-shadow:0 6px 18px rgba(0,191,255,.4);z-index:50;font-size:13px}
+
+  @media print{
+    body{background:#fff;color:#111}
+    .wrap{max-width:none;padding:0}
+    .print-btn,.diagram-hint{display:none}
+    .card,.cardinfo,.tablewrap,.diagram{break-inside:avoid}
+    h2{break-after:avoid}
+    /* El diagrama se ajusta al ancho de la página para que no salga recortado */
+    .diagram{overflow:visible;background:#fff;border-color:#bbb}
+    .diagram svg{width:100% !important;height:auto !important;max-width:100% !important}
+    .card,.cardinfo,.tablewrap{background:#fff;border-color:#bbb;box-shadow:none}
+    .card h3,.tablewrap .thead h3,table.det td.f,.cardinfo h4{color:#0b3a5c}
+    .card li,.cardinfo ul,table.det td,table.rels td{color:#1b2733}
+    table.det th,table.rels th{background:#eef4fb;color:#0b3a5c}
+    .tag,.chip{border-color:#999;color:#33475f;background:#f4f7fb}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="dot"></span>
+    <h1>Base de datos MongoDB · Urban Moto Gleam
+      <small>Modelo documental para el proyecto de Computación al Cliente · Next.js 16 + Mongoose + MongoDB</small>
+    </h1>
+  </header>
+
+  <div class="tags">
+    <span class="tag">Base de datos <b>urban_moto_gleam</b></span>
+    <span class="tag">Colecciones implementadas <b>8</b></span>
+    <span class="tag">Con datos actualmente <b>6</b></span>
+    <span class="tag">Relaciones activas <b>1</b> · futuras <b>6</b></span>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw amber"></span> <b>Contenido</b> (viene de <code>data.json</code>)</span>
+    <span><span class="sw em"></span> <b>Transaccional</b> (lo escribe el usuario)</span>
+    <span><span class="sw vio"></span> <b>Chat / embebido</b></span>
+    <span><span class="sw cyan"></span> <b>Referencia</b> (ObjectId → otra colección)</span>
+    <span><span class="chip violeta" style="border-color:rgba(167,139,250,.45);color:var(--vio);background:rgba(167,139,250,.09)">embebido</span> sub-documento dentro del mismo documento</span>
+  </div>
+
+  <div class="note">
+    <b style="color:var(--cyan2)">📖 Cómo leer este documento.</b>
+    En MongoDB no hablamos de <i>tablas</i> sino de <b>colecciones</b>, y de <i>filas</i> sino de
+    <b>documentos</b> (tipo JSON/BSON). Cada colección se muestra en dos vistas:
+    una <b>tarjeta</b> resumen y una <b>tabla detallada</b> con campo, tipo, índice y descripción.
+    Las relaciones 1:N se implementan con <b>referencias</b> (un campo que guarda el <code>ObjectId</code>
+    del documento padre) o con <b>datos embebidos</b> (sub-documentos).
+    El proyecto <b>no tiene login</b>, por eso los datos del cliente se guardan
+    <b>denormalizados</b> dentro de <code>reservas</code>.
+  </div>
+
+  <!-- ══════════════ 1. DIAGRAMA ══════════════ -->
+  <h2>1. Diagrama de relaciones <span class="sub">— líneas continuas: implementadas · punteadas: modeladas a futuro</span></h2>
+  <div class="diagram">
+    <pre class="mermaid">
+erDiagram
+    COMPANY {
+        ObjectId _id PK
+        String nombre
+        String whatsapp
+    }
+    PAQUETES {
+        ObjectId _id PK
+        String titulo
+        Number precio
+    }
+    RESERVAS {
+        ObjectId _id PK
+        String codigo UK
+        String placa
+        Date fecha
+        String estado
+    }
+    FAQS {
+        ObjectId _id PK
+        String pregunta
+    }
+    PROCESO_LAVADO {
+        ObjectId _id PK
+        Number paso UK
+    }
+    TESTIMONIOS {
+        ObjectId _id PK
+        Number rating
+    }
+    MENSAJES {
+        ObjectId _id PK
+        Boolean leido
+    }
+    CONVERSACIONES {
+        ObjectId _id PK
+        String sesionId UK
+    }
+    USERS {
+        ObjectId _id PK
+        String email UK
+    }
+    MOTOS {
+        ObjectId _id PK
+        String placa UK
+    }
+    SUSCRIPCIONES {
+        ObjectId _id PK
+        String estado
+    }
+
+    PAQUETES ||--o{ RESERVAS : "paqueteId"
+    TESTIMONIOS }o..o| USERS : "usuarioId"
+    MENSAJES }o..o| USERS : "atendidoPor"
+    CONVERSACIONES }o..o| USERS : "usuarioId"
+    USERS ||..o{ MOTOS : "usuarioId"
+    USERS ||..o{ SUSCRIPCIONES : "usuarioId"
+    PAQUETES ||..o{ SUSCRIPCIONES : "paqueteId"
+    </pre>
+    <div class="diagram-error" id="mermaidError">
+      ⚠️ No se pudo cargar el diagrama (se requiere conexión a internet la primera vez).
+      Las tarjetas y las tablas de abajo contienen toda la información del modelo.
+    </div>
+    <div class="diagram-hint">↔ Desliza horizontalmente si el diagrama no cabe en pantalla.</div>
+  </div>
+
+  <!-- ══════════════ 2. TARJETAS ══════════════ -->
+  <h2>2. Resumen de colecciones <span class="sub">— vista rápida de todas las “tablas”</span></h2>
+  <div class="cards">
+
+    <div class="card type-content">
+      <div class="col-head"><span class="badge"></span><h3>company</h3><span class="chip amber">Contenido</span></div>
+      <p class="col-role">Configuración de la empresa · documento único (singleton)</p>
+      <ul>
+        <li><span><b>nombre</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>slogan</b>, <b>descripcion</b></span><span class="t">String</span></li>
+        <li><span><b>mision</b>, <b>vision</b></span><span class="t">String</span></li>
+        <li><span><b>certificaciones</b></span><span class="t">String[]</span></li>
+        <li><span><b>ubicacion</b>, <b>whatsapp</b>, <b>email</b>, <b>telefono</b></span><span class="t">String</span></li>
+        <li><span><b>horario</b></span><span class="t">String</span></li>
+        <li><span><b>redesSociales</b> <span class="chip vio">embebido</span></span><span class="t">[{nombre,url}]</span></li>
+        <li><span><b>beneficios</b></span><span class="t">String[]</span></li>
+        <li><span><b>imagenes</b> <span class="chip vio">embebido</span></span><span class="t">{hero,beforeAfter,galeria}</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-content">
+      <div class="col-head"><span class="badge"></span><h3>paquetes</h3><span class="chip amber">Contenido</span></div>
+      <p class="col-role">Servicios y precios · 6 documentos sembrados</p>
+      <ul>
+        <li><span><b>titulo</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>descripcion</b></span><span class="t">String</span></li>
+        <li><span><b>precio</b> <span class="chip em">numérico</span></span><span class="t">Number · min 0</span></li>
+        <li><span><b>moneda</b></span><span class="t">String (COP)</span></li>
+        <li><span><b>notaPrecio</b></span><span class="t">String (ej. "/ mes")</span></li>
+        <li><span><b>duracion</b></span><span class="t">String</span></li>
+        <li><span><b>categoria</b> <span class="chip">index</span></span><span class="t">String</span></li>
+        <li><span><b>caracteristicas</b> <span class="chip vio">embebido</span></span><span class="t">String[]</span></li>
+        <li><span><b>icono</b>, <b>orden</b></span><span class="t">String · Number</span></li>
+        <li><span><b>activo</b> <span class="chip">index</span></span><span class="t">Boolean</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-content">
+      <div class="col-head"><span class="badge"></span><h3>faqs</h3><span class="chip amber">Contenido</span></div>
+      <p class="col-role">Preguntas frecuentes · 5 documentos sembrados</p>
+      <ul>
+        <li><span><b>pregunta</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>respuesta</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>categoria</b> <span class="chip">index</span></span><span class="t">String</span></li>
+        <li><span><b>orden</b></span><span class="t">Number</span></li>
+        <li><span><b>activo</b> <span class="chip">index</span></span><span class="t">Boolean</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-content">
+      <div class="col-head"><span class="badge"></span><h3>proceso_lavado</h3><span class="chip amber">Contenido</span></div>
+      <p class="col-role">Pasos del servicio · 6 documentos sembrados</p>
+      <ul>
+        <li><span><b>paso</b> <span class="chip">unique</span></span><span class="t">Number (1–6)</span></li>
+        <li><span><b>titulo</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>descripcion</b></span><span class="t">String</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-content">
+      <div class="col-head"><span class="badge"></span><h3>testimonios</h3><span class="chip amber">Contenido</span></div>
+      <p class="col-role">Opiniones de clientes · 6 documentos sembrados</p>
+      <ul>
+        <li><span><b>nombre</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>texto</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>rating</b></span><span class="t">Number (1–5)</span></li>
+        <li><span><b>aprobado</b> <span class="chip">index</span></span><span class="t">Boolean</span></li>
+        <li><span><b>usuarioId</b> <span class="chip violeta">→ users</span></span><span class="t">ObjectId · opcional</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-trans">
+      <div class="col-head"><span class="badge"></span><h3>reservas</h3><span class="chip em">Transaccional</span><span class="chip em">clave</span></div>
+      <p class="col-role">Citas agendadas · núcleo del sistema</p>
+      <ul>
+        <li><span><b>codigo</b> <span class="chip">unique</span></span><span class="t">String (UMG-XXXXX)</span></li>
+        <li><span><b>nombre</b>, <b>cedula</b>, <b>celular</b></span><span class="t">String · requeridos</span></li>
+        <li><span><b>email</b></span><span class="t">String · opcional</span></li>
+        <li><span><b>placa</b> <span class="chip">index</span></span><span class="t">String · requerido</span></li>
+        <li><span><b>marca</b>, <b>modelo</b></span><span class="t">String · requeridos</span></li>
+        <li><span><b>servicio</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>paqueteId</b> <span class="chip violeta">→ paquetes</span></span><span class="t">ObjectId · opcional</span></li>
+        <li><span><b>fecha</b> <span class="chip em">compound</span></span><span class="t">Date (UTC)</span></li>
+        <li><span><b>hora</b> <span class="chip em">compound</span></span><span class="t">String ("08:00")</span></li>
+        <li><span><b>observaciones</b></span><span class="t">String · opcional</span></li>
+        <li><span><b>estado</b> <span class="chip">index</span></span><span class="t">enum (5 valores)</span></li>
+        <li><span><b>activa</b> <span class="chip em">compound</span></span><span class="t">Boolean (cupo)</span></li>
+        <li><span><b>whatsappEnviado</b>, <b>whatsappError</b></span><span class="t">Bool · String</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-trans">
+      <div class="col-head"><span class="badge"></span><h3>mensajes</h3><span class="chip em">Transaccional</span><span class="chip gray">sin datos aún</span></div>
+      <p class="col-role">Formulario de contacto</p>
+      <ul>
+        <li><span><b>nombre</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>email</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>telefono</b></span><span class="t">String · opcional</span></li>
+        <li><span><b>mensaje</b></span><span class="t">String · requerido</span></li>
+        <li><span><b>leido</b> <span class="chip">index</span></span><span class="t">Boolean</span></li>
+        <li><span><b>atendidoPor</b> <span class="chip violeta">→ users</span></span><span class="t">ObjectId · futuro</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-chat">
+      <div class="col-head"><span class="badge"></span><h3>conversaciones</h3><span class="chip violeta">Chat</span><span class="chip gray">sin datos aún</span></div>
+      <p class="col-role">Chatbot · mensajes embebidos</p>
+      <ul>
+        <li><span><b>sesionId</b> <span class="chip">unique</span></span><span class="t">String (UUID)</span></li>
+        <li><span><b>usuarioId</b> <span class="chip violeta">→ users</span></span><span class="t">ObjectId · opcional</span></li>
+        <li><span><b>mensajes</b> <span class="chip vio">embebido</span></span><span class="t">[{rol,texto,fecha}]</span></li>
+        <li><span><b>tema</b></span><span class="t">String</span></li>
+        <li><span><b>ultimoMensajeEn</b></span><span class="t">Date</span></li>
+        <li><span><b>createdAt</b> / <b>updatedAt</b></span><span class="t">Date</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-future">
+      <div class="col-head"><span class="badge"></span><h3>users</h3><span class="chip gray">Futuro</span></div>
+      <p class="col-role">Clientes y empleados · modelada, sin flujo activo (no hay login)</p>
+      <ul>
+        <li><span><b>nombre</b></span><span class="t">String</span></li>
+        <li><span><b>email</b> <span class="chip">unique</span></span><span class="t">String</span></li>
+        <li><span><b>telefono</b></span><span class="t">String</span></li>
+        <li><span><b>rol</b></span><span class="t">cliente|empleado|admin</span></li>
+        <li><span><b>contrasenaHash</b></span><span class="t">String</span></li>
+        <li><span><b>estado</b></span><span class="t">activo|inactivo</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-future">
+      <div class="col-head"><span class="badge"></span><h3>motos</h3><span class="chip gray">Futuro</span></div>
+      <p class="col-role">Vehículos de los clientes</p>
+      <ul>
+        <li><span><b>usuarioId</b> <span class="chip violeta">→ users</span></span><span class="t">ObjectId</span></li>
+        <li><span><b>marca</b>, <b>modelo</b></span><span class="t">String</span></li>
+        <li><span><b>placa</b> <span class="chip">unique</span></span><span class="t">String</span></li>
+        <li><span><b>cilindraje</b>, <b>anio</b></span><span class="t">Number</span></li>
+        <li><span><b>color</b></span><span class="t">String</span></li>
+      </ul>
+    </div>
+
+    <div class="card type-future">
+      <div class="col-head"><span class="badge"></span><h3>suscripciones</h3><span class="chip gray">Futuro</span></div>
+      <p class="col-role">Membresía Prime</p>
+      <ul>
+        <li><span><b>usuarioId</b> <span class="chip violeta">→ users</span></span><span class="t">ObjectId</span></li>
+        <li><span><b>paqueteId</b> <span class="chip violeta">→ paquetes</span></span><span class="t">ObjectId</span></li>
+        <li><span><b>fechaInicio</b>, <b>fechaFin</b></span><span class="t">Date</span></li>
+        <li><span><b>estado</b></span><span class="t">activa|pausada|…</span></li>
+        <li><span><b>renovacionAutomatica</b></span><span class="t">Boolean</span></li>
+        <li><span><b>usosRestantes</b></span><span class="t">Number</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ 3. TABLAS DETALLADAS ══════════════ -->
+  <h2>3. Estructura detallada de cada colección <span class="sub">— campo, tipo, índice y descripción</span></h2>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>company</h3><span class="role">Configuración de la empresa · documento único</span><span class="chip amber">Contenido</span><span class="chip gray">1 documento</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único generado por MongoDB.</td></tr>
+      <tr><td class="f">nombre</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Nombre de la empresa.</td></tr>
+      <tr><td class="f">slogan</td><td class="ty">String</td><td></td><td class="d">Lema comercial mostrado en el hero.</td></tr>
+      <tr><td class="f">descripcion</td><td class="ty">String</td><td></td><td class="d">Texto descriptivo de la empresa.</td></tr>
+      <tr><td class="f">mision / vision</td><td class="ty">String</td><td></td><td class="d">Declaraciones institucionales.</td></tr>
+      <tr><td class="f">certificaciones</td><td class="ty">String[]</td><td><span class="chip violeta">embebido</span></td><td class="d">Lista de sellos y certificados.</td></tr>
+      <tr><td class="f">ubicacion</td><td class="ty">String</td><td></td><td class="d">Dirección física del taller.</td></tr>
+      <tr><td class="f">whatsapp</td><td class="ty">String</td><td></td><td class="d">Número de WhatsApp del negocio.</td></tr>
+      <tr><td class="f">email</td><td class="ty">String</td><td></td><td class="d">Correo de contacto.</td></tr>
+      <tr><td class="f">telefono</td><td class="ty">String</td><td></td><td class="d">Teléfono fijo.</td></tr>
+      <tr><td class="f">horario</td><td class="ty">String</td><td></td><td class="d">Horario de atención.</td></tr>
+      <tr><td class="f">redesSociales</td><td class="ty">[{nombre, url}]</td><td><span class="chip violeta">embebido</span></td><td class="d">Redes sociales con su enlace.</td></tr>
+      <tr><td class="f">beneficios</td><td class="ty">String[]</td><td></td><td class="d">Ventajas mostradas en la landing.</td></tr>
+      <tr><td class="f">imagenes</td><td class="ty">{hero, beforeAfter, galeria}</td><td><span class="chip violeta">embebido</span></td><td class="d">Rutas del video hero, antes/después y galería.</td></tr>
+      <tr><td class="f">createdAt / updatedAt</td><td class="ty">Date</td><td><span class="chip gray">automático</span></td><td class="d">Auditoría de creación y modificación.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>paquetes</h3><span class="role">Servicios y precios</span><span class="chip amber">Contenido</span><span class="chip gray">6 documentos</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">titulo</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Nombre del paquete (ej. “Lavado Premium”).</td></tr>
+      <tr><td class="f">descripcion</td><td class="ty">String</td><td></td><td class="d">Descripción comercial del servicio.</td></tr>
+      <tr><td class="f">precio</td><td class="ty">Number</td><td><span class="chip em">numérico</span> <span class="chip gray">min 0</span></td><td class="d">Se guarda como número (no texto) para poder filtrar y ordenar.</td></tr>
+      <tr><td class="f">moneda</td><td class="ty">String</td><td></td><td class="d">Moneda del precio (COP).</td></tr>
+      <tr><td class="f">notaPrecio</td><td class="ty">String</td><td></td><td class="d">Texto extra del precio, ej. “/ mes” en la suscripción.</td></tr>
+      <tr><td class="f">duracion</td><td class="ty">String</td><td></td><td class="d">Duración estimada del servicio.</td></tr>
+      <tr><td class="f">categoria</td><td class="ty">String</td><td><span class="chip">index</span></td><td class="d">lavado · detailing · motor · suscripcion.</td></tr>
+      <tr><td class="f">caracteristicas</td><td class="ty">String[]</td><td><span class="chip violeta">embebido</span></td><td class="d">Lista de lo que incluye el paquete.</td></tr>
+      <tr><td class="f">icono</td><td class="ty">String</td><td></td><td class="d">Ruta del icono SVG.</td></tr>
+      <tr><td class="f">orden</td><td class="ty">Number</td><td></td><td class="d">Orden de aparición en la landing.</td></tr>
+      <tr><td class="f">activo</td><td class="ty">Boolean</td><td><span class="chip">index</span></td><td class="d">Permite ocultar un paquete sin borrarlo.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>reservas</h3><span class="role">Citas agendadas · colección clave del sistema</span><span class="chip em">Transaccional</span><span class="chip gray">crece con cada cita</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">codigo</td><td class="ty">String</td><td><span class="chip">unique</span></td><td class="d">Código que se comparte al cliente, ej. <code>UMG-S98N2</code>.</td></tr>
+      <tr><td class="f">nombre</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Nombre completo del cliente.</td></tr>
+      <tr><td class="f">cedula</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Cédula de ciudadanía (solo dígitos).</td></tr>
+      <tr><td class="f">celular</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Celular en formato internacional sin “+”, ej. 573001234567 (WhatsApp).</td></tr>
+      <tr><td class="f">email</td><td class="ty">String</td><td><span class="chip gray">opcional</span></td><td class="d">Correo del cliente (se guarda en minúsculas).</td></tr>
+      <tr><td class="f">placa</td><td class="ty">String</td><td><span class="chip">index</span> <span class="chip rose">requerido</span></td><td class="d">Placa de la moto en mayúsculas, ej. ABC12D.</td></tr>
+      <tr><td class="f">marca</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Marca de la moto, ej. Yamaha.</td></tr>
+      <tr><td class="f">modelo</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Modelo de la moto, ej. R15.</td></tr>
+      <tr><td class="f">servicio</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Título del paquete elegido.</td></tr>
+      <tr><td class="f">paqueteId <span class="pk">FK</span></td><td class="ty">ObjectId</td><td><span class="chip violeta">→ paquetes</span> <span class="chip gray">opcional</span></td><td class="d">Referencia al paquete de catálogo, si existe.</td></tr>
+      <tr><td class="f">fecha</td><td class="ty">Date</td><td><span class="chip em">compound</span></td><td class="d">Día reservado en medianoche UTC (evita corrimientos de zona horaria).</td></tr>
+      <tr><td class="f">hora</td><td class="ty">String</td><td><span class="chip em">compound</span></td><td class="d">Bloque horario, ej. “08:00”.</td></tr>
+      <tr><td class="f">observaciones</td><td class="ty">String</td><td><span class="chip gray">opcional</span></td><td class="d">Notas del cliente (ej. “rayón en el tanque”).</td></tr>
+      <tr><td class="f">estado</td><td class="ty">String</td><td><span class="chip">index</span></td><td class="d">pendiente · confirmada · en_proceso · completada · cancelada.</td></tr>
+      <tr><td class="f">activa</td><td class="ty">Boolean</td><td><span class="chip em">compound</span></td><td class="d">Campo técnico: pasa a <code>false</code> al cancelar, lo que <b>libera el cupo</b>.</td></tr>
+      <tr><td class="f">whatsappEnviado</td><td class="ty">Boolean</td><td></td><td class="d">Si el aviso automático por WhatsApp se envió correctamente.</td></tr>
+      <tr><td class="f">whatsappError</td><td class="ty">String</td><td></td><td class="d">Detalle del fallo de envío, si lo hubo.</td></tr>
+      <tr><td class="f">createdAt / updatedAt</td><td class="ty">Date</td><td><span class="chip gray">automático</span></td><td class="d">Auditoría.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>faqs</h3><span class="role">Preguntas frecuentes</span><span class="chip amber">Contenido</span><span class="chip gray">5 documentos</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">pregunta</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Texto de la pregunta.</td></tr>
+      <tr><td class="f">respuesta</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Texto de la respuesta.</td></tr>
+      <tr><td class="f">categoria</td><td class="ty">String</td><td><span class="chip">index</span></td><td class="d">Agrupación temática de la FAQ.</td></tr>
+      <tr><td class="f">orden</td><td class="ty">Number</td><td></td><td class="d">Orden de aparición en la interfaz.</td></tr>
+      <tr><td class="f">activo</td><td class="ty">Boolean</td><td><span class="chip">index</span></td><td class="d">Permite ocultar preguntas sin borrarlas.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>proceso_lavado</h3><span class="role">Pasos del servicio</span><span class="chip amber">Contenido</span><span class="chip gray">6 documentos</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">paso</td><td class="ty">Number</td><td><span class="chip">unique</span></td><td class="d">Número del paso (1 a 6).</td></tr>
+      <tr><td class="f">titulo</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Título del paso.</td></tr>
+      <tr><td class="f">descripcion</td><td class="ty">String</td><td></td><td class="d">Explicación del paso.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>testimonios</h3><span class="role">Opiniones de clientes</span><span class="chip amber">Contenido</span><span class="chip gray">6 documentos</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">nombre</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Nombre del cliente que opina.</td></tr>
+      <tr><td class="f">texto</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Contenido de la opinión.</td></tr>
+      <tr><td class="f">rating</td><td class="ty">Number</td><td><span class="chip gray">1–5</span></td><td class="d">Calificación en estrellas.</td></tr>
+      <tr><td class="f">aprobado</td><td class="ty">Boolean</td><td><span class="chip">index</span></td><td class="d">Moderación: solo los aprobados se muestran en la landing.</td></tr>
+      <tr><td class="f">usuarioId <span class="pk">FK</span></td><td class="ty">ObjectId</td><td><span class="chip violeta">→ users</span> <span class="chip gray">opcional</span></td><td class="d">Referencia al usuario, cuando exista login.</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>mensajes</h3><span class="role">Formulario de contacto</span><span class="chip em">Transaccional</span><span class="chip gray">modelada</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">nombre</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Nombre de quien escribe.</td></tr>
+      <tr><td class="f">email</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Correo de contacto.</td></tr>
+      <tr><td class="f">telefono</td><td class="ty">String</td><td><span class="chip gray">opcional</span></td><td class="d">Teléfono adicional.</td></tr>
+      <tr><td class="f">mensaje</td><td class="ty">String</td><td><span class="chip rose">requerido</span></td><td class="d">Contenido del mensaje.</td></tr>
+      <tr><td class="f">leido</td><td class="ty">Boolean</td><td><span class="chip">index</span></td><td class="d">Bandeja de entrada del taller.</td></tr>
+      <tr><td class="f">atendidoPor <span class="pk">FK</span></td><td class="ty">ObjectId</td><td><span class="chip violeta">→ users</span></td><td class="d">Empleado que lo atendió (a futuro).</td></tr>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="thead"><h3>conversaciones</h3><span class="role">Chatbot · mensajes embebidos</span><span class="chip violeta">Chat</span><span class="chip gray">modelada</span></div>
+    <table class="det">
+      <tr><th>Campo</th><th>Tipo</th><th>Restricción</th><th>Descripción</th></tr>
+      <tr><td class="f">_id <span class="pk">PK</span></td><td class="ty">ObjectId</td><td><span class="chip gray">auto</span></td><td class="d">Identificador único.</td></tr>
+      <tr><td class="f">sesionId</td><td class="ty">String</td><td><span class="chip">unique</span></td><td class="d">Identifica la sesión del navegador (UUID).</td></tr>
+      <tr><td class="f">usuarioId <span class="pk">FK</span></td><td class="ty">ObjectId</td><td><span class="chip violeta">→ users</span> <span class="chip gray">opcional</span></td><td class="d">Usuario asociado, si hay sesión iniciada.</td></tr>
+      <tr><td class="f">mensajes</td><td class="ty">[{rol, texto, fecha}]</td><td><span class="chip violeta">embebido</span></td><td class="d">Historial del chat. Se embebe porque siempre se lee junto con la conversación.</td></tr>
+      <tr><td class="f">tema</td><td class="ty">String</td><td></td><td class="d">Clasificación del chat (precios, horarios…).</td></tr>
+      <tr><td class="f">ultimoMensajeEn</td><td class="ty">Date</td><td></td><td class="d">Fecha del último mensaje.</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════ 4. RELACIONES ══════════════ -->
+  <h2>4. Relaciones entre colecciones</h2>
+  <div class="cardinfo">
+    <table class="rels">
+      <tr><th>Origen (1)</th><th>Acción</th><th>Destino (N)</th><th>Campo de referencia</th><th>Estado</th></tr>
+      <tr><td>paquetes</td><td>se reserva en</td><td>reservas</td><td><code>reservas.paqueteId</code></td><td><span class="rel-badge">1 : N · activa</span></td></tr>
+      <tr><td>users</td><td>posee</td><td>motos</td><td><code>motos.usuarioId</code></td><td><span class="rel-badge off">1 : N · futura</span></td></tr>
+      <tr><td>users</td><td>contrata</td><td>suscripciones</td><td><code>suscripciones.usuarioId</code></td><td><span class="rel-badge off">1 : N · futura</span></td></tr>
+      <tr><td>paquetes</td><td>base de</td><td>suscripciones</td><td><code>suscripciones.paqueteId</code></td><td><span class="rel-badge off">1 : N · futura</span></td></tr>
+      <tr><td>users</td><td>deja</td><td>testimonios</td><td><code>testimonios.usuarioId</code></td><td><span class="rel-badge off">1 : N · opcional</span></td></tr>
+      <tr><td>users</td><td>atiende</td><td>mensajes</td><td><code>mensajes.atendidoPor</code></td><td><span class="rel-badge off">1 : N · futura</span></td></tr>
+      <tr><td>users</td><td>chatea en</td><td>conversaciones</td><td><code>conversaciones.usuarioId</code></td><td><span class="rel-badge off">1 : N · opcional</span></td></tr>
+    </table>
+    <div class="note" style="margin-top:14px">
+      <b style="color:var(--cyan2)">ℹ️ Nota importante sobre <code>users</code>.</b>
+      El proyecto <b>no tiene login ni registro</b>, así que la relación <code>users → reservas</code> se
+      resolvió <b>denormalizando</b> los datos del cliente dentro de la propia reserva
+      (<code>nombre</code>, <code>cedula</code>, <code>celular</code>, <code>email</code>).
+      Esto evita forzar un módulo de autenticación y deja el modelo listo para agregarlo después
+      sin romper nada.
+    </div>
+  </div>
+
+  <!-- ══════════════ 5. ÍNDICES ══════════════ -->
+  <h2>5. Índices de la base de datos</h2>
+  <div class="grid2">
+    <div class="cardinfo">
+      <h4>🔒 Índice clave: control de sobrecupos</h4>
+      <ul>
+        <li><code>reservas</code> → <code>{ fecha: 1, hora: 1 }</code> <b>único</b> y <b>parcial</b> sobre <code>activa: true</code> (nombre: <code>cupo_unico_activo</code>).</li>
+        <li>Garantiza que <b>un día y una hora solo admiten una reserva activa</b>.</li>
+        <li>Al cancelar una reserva, <code>activa</code> pasa a <code>false</code> y el cupo <b>se libera</b>.</li>
+        <li>Si dos personas reservan el mismo bloque a la vez, MongoDB rechaza la segunda (error <code>11000</code>) y la API responde <b>409 Conflict</b>.</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>⚡ Otros índices</h4>
+      <ul>
+        <li><code>reservas.codigo</code> → único</li>
+        <li><code>reservas.placa</code> → búsqueda por moto</li>
+        <li><code>reservas.estado + fecha</code> → compuesto, agenda del panel</li>
+        <li><code>reservas.createdAt</code> → orden descendente</li>
+        <li><code>paquetes.activo</code>, <code>paquetes.categoria</code></li>
+        <li><code>faqs.activo</code>, <code>faqs.categoria</code></li>
+        <li><code>testimonios.aprobado</code></li>
+        <li><code>proceso_lavado.paso</code> → único</li>
+        <li><code>conversaciones.sesionId</code> → único</li>
+        <li><code>mensajes.leido</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════ 6. DECISIONES ══════════════ -->
+  <h2>6. Decisiones de diseño</h2>
+  <div class="grid2">
+    <div class="cardinfo">
+      <h4>📄 Documentos y relaciones</h4>
+      <ul>
+        <li><b>Referencias (ObjectId)</b> para las relaciones 1:N (<code>paqueteId</code>, <code>usuarioId</code>, <code>atendidoPor</code>).</li>
+        <li><b>Embebido</b> en <code>conversaciones.mensajes[]</code>, <code>paquetes.caracteristicas[]</code>, <code>company.redesSociales[]</code> e <code>company.imagenes</code>, porque siempre se leen junto al documento padre.</li>
+        <li><b>Denormalización</b> de los datos del cliente en <code>reservas</code> (no hay login).</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>💰 Precios y fechas</h4>
+      <ul>
+        <li>El <b>precio se guarda como número</b> + <code>moneda</code> + <code>notaPrecio</code>, para poder consultar “servicios entre $50.000 y $120.000”.</li>
+        <li><code>fecha</code> se guarda a <b>medianoche UTC</b> para evitar corrimientos por zona horaria (Bogotá es UTC−5).</li>
+        <li>La <b>hora</b> va aparte como texto <code>"HH:MM"</code>, con 8 bloques disponibles por día.</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>🛡️ Integridad y auditoría</h4>
+      <ul>
+        <li><code>unique</code> en <code>reservas.codigo</code>, <code>proceso_lavado.paso</code>, <code>conversaciones.sesionId</code>.</li>
+        <li><b>Validación de tipos</b> en el esquema Mongoose (requeridos, <code>min</code>, <code>enum</code> de estados).</li>
+        <li><code>createdAt</code> / <code>updatedAt</code> automáticos en todas las colecciones.</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>🧩 ¿Por qué MongoDB y no SQL?</h4>
+      <ul>
+        <li>El contenido ya vivía como <b>documentos JSON</b> en <code>data.json</code>: encaja de forma natural.</li>
+        <li>Los datos del taller son <b>flexibles</b> (cada paquete con sus propias características, cada moto con su configuración).</li>
+        <li>Las relaciones son <b>pocas y simples</b> (1:N), ideales para referencias en lugar de <i>JOINs</i>.</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>📦 Qué guarda cada interacción</h4>
+      <ul>
+        <li><b>BookingModal</b> → <code>reservas</code> (con datos del cliente y de la moto).</li>
+        <li><b>ContactSection</b> → <code>mensajes</code>.</li>
+        <li><b>FaqChatbot</b> → <code>conversaciones</code> (mensajes embebidos).</li>
+        <li><b>Panel /admin</b> → lee <code>reservas</code> y cambia su estado.</li>
+      </ul>
+    </div>
+    <div class="cardinfo">
+      <h4>🔔 Notificación al cliente</h4>
+      <ul>
+        <li>Al crear la reserva, el servidor envía al cliente un WhatsApp con <b>día, hora, nombre, moto, placa y servicio</b>.</li>
+        <li>Se usa <b>whatsapp-web.js</b> (sesión de WhatsApp Web vinculada por QR) — es una solución de <b>demo</b>, no de producción.</li>
+        <li>El resultado del envío se registra en <code>reservas.whatsappEnviado</code> / <code>whatsappError</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    Esquema de base de datos MongoDB · <b>Urban Moto Gleam</b> · proyecto_lenguajeweb · Computación al Cliente<br>
+    Base de datos: <code>urban_moto_gleam</code> · 8 colecciones · Mongoose + Next.js 16
+  </footer>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨 Imprimir / PDF</button>
+
+<script type="module">
+  // Carga Mermaid desde CDN. Si no hay internet, se muestra un aviso y las
+  // tarjetas + tablas siguen siendo totalmente legibles.
+  const fallback = document.getElementById('mermaidError');
+  const diagrama = document.querySelector('.mermaid');
+
+  try {
+    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0b1226',
+        primaryColor: '#0f1c37',
+        primaryTextColor: '#eaf4ff',
+        primaryBorderColor: '#00bfff',
+        lineColor: '#34d399',
+        tertiaryColor: '#0a1330',
+        fontFamily: 'Segoe UI, system-ui, sans-serif'
+      },
+      er: { useMaxWidth: false, diagramPadding: 18, layoutDirection: 'TB', minEntityWidth: 110, entityPadding: 14 }
+    });
+    await mermaid.run({ nodes: [diagrama] });
+  } catch (error) {
+    console.warn('Mermaid no disponible:', error);
+    if (diagrama) diagrama.style.display = 'none';
+    if (fallback) fallback.style.display = 'block';
+  }
+</script>
+</body>
+</html>
