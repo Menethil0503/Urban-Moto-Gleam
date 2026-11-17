@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/src/lib/mongodb";
 import { Reserva } from "@/src/lib/models/Reserva";
+import { Trabajador } from "@/src/lib/models/Trabajador";
 import {
-  CUPOS_POR_DIA,
   HORAS_DISPONIBLES,
   formatoFechaISO,
   parseFechaISO,
@@ -27,9 +27,11 @@ export async function GET(request: Request) {
   const conteoPorDia: Record<string, number> = {};
   const diasCompletos: string[] = [];
   let horasOcupadas: string[] = [];
+  let trabajadoresActivos = 0;
 
   try {
     await connectDB();
+    trabajadoresActivos = await Trabajador.countDocuments({ activo: true });
 
     // ── Ocupación del mes ──────────────────────────────────────
     if (mes) {
@@ -49,8 +51,17 @@ export async function GET(request: Request) {
       }
 
       for (const [clave, total] of Object.entries(conteoPorDia)) {
-        if (total >= CUPOS_POR_DIA) {
+        if (total >= HORAS_DISPONIBLES.length * trabajadoresActivos) {
           diasCompletos.push(clave);
+        }
+      }
+
+      if (trabajadoresActivos === 0) {
+        const [anio, numeroMes] = mes.split("-").map(Number);
+        const cantidadDias = new Date(Date.UTC(anio, numeroMes, 0)).getUTCDate();
+        for (let dia = 1; dia <= cantidadDias; dia += 1) {
+          const clave = `${mes}-${String(dia).padStart(2, "0")}`;
+          if (!diasCompletos.includes(clave)) diasCompletos.push(clave);
         }
       }
     }
@@ -62,15 +73,34 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "El parámetro «fecha» debe tener el formato YYYY-MM-DD." }, { status: 400 });
       }
 
-      const reservasDelDia = (await Reserva.find({ fecha, activa: true }, { hora: 1 }).lean()) as unknown as {
+      const reservasDelDia = (await Reserva.find({ fecha, activa: true }, { hora: 1, trabajadorId: 1 }).lean()) as unknown as {
         hora: string;
+        trabajadorId?: { toString(): string } | null;
       }[];
-      horasOcupadas = reservasDelDia.map((reserva) => reserva.hora);
+      const conteoPorHora = new Map<string, { total: number; asignados: Set<string>; sinAsignar: number }>();
+      for (const reserva of reservasDelDia) {
+        const conteo = conteoPorHora.get(reserva.hora) ?? { total: 0, asignados: new Set<string>(), sinAsignar: 0 };
+        conteo.total += 1;
+        if (reserva.trabajadorId) conteo.asignados.add(reserva.trabajadorId.toString());
+        else conteo.sinAsignar += 1;
+        conteoPorHora.set(reserva.hora, conteo);
+      }
+      horasOcupadas = HORAS_DISPONIBLES.filter(
+        (hora) => {
+          const conteo = conteoPorHora.get(hora);
+          if (!conteo) return trabajadoresActivos === 0;
+          const capacidadLibre = trabajadoresActivos - conteo.asignados.size;
+          return conteo.sinAsignar > 0
+            ? capacidadLibre <= conteo.sinAsignar
+            : conteo.total >= trabajadoresActivos;
+        },
+      );
     }
 
     return NextResponse.json({
       horas: HORAS_DISPONIBLES,
-      cuposPorDia: CUPOS_POR_DIA,
+      cuposPorDia: HORAS_DISPONIBLES.length * trabajadoresActivos,
+      trabajadoresActivos,
       conteoPorDia,
       diasCompletos,
       horasOcupadas,

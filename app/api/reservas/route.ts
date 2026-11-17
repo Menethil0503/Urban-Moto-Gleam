@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/src/lib/mongodb";
 import { Reserva } from "@/src/lib/models/Reserva";
+import { Trabajador } from "@/src/lib/models/Trabajador";
 import { exigirSesion } from "@/src/lib/auth-servidor";
 import {
   HORAS_DISPONIBLES,
@@ -43,15 +44,57 @@ type DatosCreacionReserva = {
   observaciones: string;
 };
 
+let indiceCuposPreparado: Promise<void> | null = null;
+
+async function prepararIndiceCupos() {
+  indiceCuposPreparado ??= (async () => {
+    try {
+      await Reserva.collection.dropIndex("cupo_unico_activo");
+    } catch (error) {
+      const codigo = (error as { code?: number }).code;
+      if (codigo !== 27 && codigo !== 26) throw error;
+    }
+    await Reserva.collection.createIndex(
+      { fecha: 1, hora: 1, trabajadorId: 1 },
+      {
+        unique: true,
+        partialFilterExpression: { activa: true, trabajadorId: { $exists: true } },
+        name: "cupo_trabajador_activo",
+      },
+    );
+  })();
+  await indiceCuposPreparado;
+}
+
+async function buscarTrabajadorDisponible(fecha: Date, hora: string) {
+  const trabajadores = await Trabajador.find({ activo: true }).sort({ createdAt: 1 }).lean();
+  if (trabajadores.length === 0) return null;
+
+  const reservas = await Reserva.find({ fecha, hora, activa: true }, { trabajadorId: 1 }).lean();
+  const asignados = new Set(reservas.map((reserva) => reserva.trabajadorId?.toString()).filter(Boolean));
+  const reservasSinAsignar = reservas.filter((reserva) => !reserva.trabajadorId).length;
+  const libres = trabajadores.filter((trabajador) => !asignados.has(trabajador._id.toString()));
+  const trabajador = libres.length > reservasSinAsignar ? libres[reservasSinAsignar] : null;
+
+  return trabajador
+    ? { id: trabajador._id, nombre: trabajador.nombre }
+    : null;
+}
+
 /**
  * Crea la reserva generando un código único. Reintenta si el código aleatorio
  * colisiona y distingue el caso en que el cupo fue tomado en paralelo.
  */
 async function crearReservaConCodigoUnico(datos: DatosCreacionReserva) {
-  for (let intento = 0; intento < 3; intento += 1) {
+  for (let intento = 0; intento < 10; intento += 1) {
+    const trabajador = await buscarTrabajadorDisponible(datos.fecha, datos.hora);
+    if (!trabajador) return { reserva: null, cupoTomado: true };
+
     try {
       const reserva = await Reserva.create({
         ...datos,
+        trabajadorId: trabajador.id,
+        trabajadorNombre: trabajador.nombre,
         codigo: generarCodigoReserva(),
         estado: "pendiente",
         activa: true,
@@ -64,13 +107,10 @@ async function crearReservaConCodigoUnico(datos: DatosCreacionReserva) {
         throw error;
       }
 
-      if (await Reserva.exists({ fecha: datos.fecha, hora: datos.hora, activa: true })) {
-        return { reserva: null, cupoTomado: true };
-      }
     }
   }
 
-  return { reserva: null, cupoTomado: false };
+  return { reserva: null, cupoTomado: true };
 }
 
 /** GET /api/reservas — listado para el panel de administración. */
@@ -80,6 +120,7 @@ export async function GET(request: Request) {
 
   try {
     await connectDB();
+    await prepararIndiceCupos();
 
     const { searchParams } = new URL(request.url);
     const estado = searchParams.get("estado");
@@ -182,13 +223,14 @@ export async function POST(request: Request) {
 
   try {
     await connectDB();
+    await prepararIndiceCupos();
 
-    // ── Cupo en tiempo real ────────────────────────────────────
-    const ocupado = await Reserva.exists({ fecha, hora, activa: true });
-    if (ocupado) {
+    // ── Capacidad por trabajador en tiempo real ────────────────
+    const capacidad = await Trabajador.countDocuments({ activo: true });
+    if (capacidad === 0) {
       return NextResponse.json(
-        { error: "Ese horario ya fue reservado por otra persona. Elige otro, por favor." },
-        { status: 409 },
+        { error: "El taller aún no tiene trabajadores activos para recibir reservas." },
+        { status: 503 },
       );
     }
 

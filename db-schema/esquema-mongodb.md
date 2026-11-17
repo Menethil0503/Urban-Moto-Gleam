@@ -182,6 +182,8 @@ Sin login, los datos personales se **denormalizan** para que el taller tenga tod
 | `paqueteId` | ObjectId | — | → `paquetes._id` (opcional, si existe en catálogo) |
 | `fecha` | Date | **compound** | Medianoche **UTC** del día reservado |
 | `hora` | string | **compound** | Bloque horario, ej. `"08:00"` |
+| `trabajadorId` | ObjectId | **compound** | → `trabajadores._id`; quien atenderá la cita |
+| `trabajadorNombre` | string | — | Nombre guardado como referencia legible en la reserva |
 | `observaciones` | string | — | Opcional (ej. "rayón en el tanque, evitar esa zona") |
 | **— Gestión —** | | | |
 | `estado` | string | **index** | `pendiente`/`confirmada`/`en_proceso`/`completada`/`cancelada` |
@@ -190,19 +192,19 @@ Sin login, los datos personales se **denormalizan** para que el taller tenga tod
 | `whatsappError` | string | — | Detalle del fallo (si lo hubo) |
 | `createdAt` / `updatedAt` | Date | — | Auditoría |
 
-> **🔒 Índice único parcial — control de sobrecupos.** Un mismo día y hora solo admite **una reserva
-> activa**:
+> **🔒 Índice único parcial — capacidad por trabajador.** Cada trabajador puede atender **una reserva
+> activa por bloque**:
 >
 > ```js
 > db.reservas.createIndex(
->   { fecha: 1, hora: 1 },
->   { unique: true, partialFilterExpression: { activa: true }, name: "cupo_unico_activo" }
+>   { fecha: 1, hora: 1, trabajadorId: 1 },
+>   { unique: true, partialFilterExpression: { activa: true, trabajadorId: { $exists: true } }, name: "cupo_trabajador_activo" }
 > )
 > ```
 >
-> Se usa `partialFilterExpression` en vez de un único plano para que cancelar una reserva **libere el
-> cupo**. Si dos personas confirman el mismo bloque en simultáneo, MongoDB rechaza la segunda (error
-> `11000`) y la API responde **409 Conflict**.
+> Se usa `partialFilterExpression` en vez de un índice único plano para que cancelar una reserva **libere el
+> cupo**. Si dos personas confirman el mismo bloque en simultáneo, la API reintenta con otro trabajador
+> disponible y responde **409 Conflict** solo cuando todos están ocupados.
 
 > **💡 Índices de apoyo:** `{ estado: 1, fecha: 1 }` para filtrar la agenda del panel y
 > `{ createdAt: -1 }` para listar por las más recientes.

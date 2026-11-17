@@ -14,6 +14,7 @@ export type ReservaJSON = {
   servicio: string;
   fecha: string; // YYYY-MM-DD
   hora: string;
+  trabajador: string;
   observaciones: string;
   estado: EstadoReserva;
   whatsappEnviado: boolean;
@@ -33,6 +34,7 @@ type ReservaOrigen = {
   servicio: string;
   fecha: Date;
   hora: string;
+  trabajadorNombre?: string | null;
   observaciones?: string | null;
   estado: string;
   whatsappEnviado?: boolean | null;
@@ -54,6 +56,7 @@ export function serializarReserva(reserva: ReservaOrigen): ReservaJSON {
     servicio: reserva.servicio,
     fecha: formatoFechaISO(reserva.fecha),
     hora: reserva.hora,
+    trabajador: reserva.trabajadorNombre ?? "Sin asignar",
     observaciones: reserva.observaciones ?? "",
     estado: reserva.estado as EstadoReserva,
     whatsappEnviado: Boolean(reserva.whatsappEnviado),

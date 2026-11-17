@@ -28,6 +28,8 @@ const reservaSchema = new Schema(
     paqueteId: { type: Schema.Types.ObjectId, ref: "Paquete" },
     fecha: { type: Date, required: true, index: true }, // medianoche UTC del día reservado
     hora: { type: String, required: true, trim: true }, // "08:00"
+    trabajadorId: { type: Schema.Types.ObjectId, ref: "Trabajador" },
+    trabajadorNombre: { type: String, trim: true, default: "" },
 
     observaciones: { type: String, trim: true, default: "" },
 
@@ -43,10 +45,14 @@ const reservaSchema = new Schema(
   { timestamps: true, collection: "reservas" },
 );
 
-// Un cupo (día + hora) solo admite una reserva activa: evita sobrecupos.
+// Cada trabajador puede atender una sola moto por bloque horario.
 reservaSchema.index(
-  { fecha: 1, hora: 1 },
-  { unique: true, partialFilterExpression: { activa: true }, name: "cupo_unico_activo" },
+  { fecha: 1, hora: 1, trabajadorId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { activa: true, trabajadorId: { $exists: true } },
+    name: "cupo_trabajador_activo",
+  },
 );
 
 // Consultas frecuentes del panel de administración.

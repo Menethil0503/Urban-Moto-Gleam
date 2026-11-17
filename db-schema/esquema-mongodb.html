@@ -550,10 +550,10 @@ erDiagram
     <div class="cardinfo">
       <h4>🔒 Índice clave: control de sobrecupos</h4>
       <ul>
-        <li><code>reservas</code> → <code>{ fecha: 1, hora: 1 }</code> <b>único</b> y <b>parcial</b> sobre <code>activa: true</code> (nombre: <code>cupo_unico_activo</code>).</li>
-        <li>Garantiza que <b>un día y una hora solo admiten una reserva activa</b>.</li>
+        <li><code>reservas</code> → <code>{ fecha: 1, hora: 1, trabajadorId: 1 }</code> <b>único</b> y <b>parcial</b> sobre reservas activas asignadas (nombre: <code>cupo_trabajador_activo</code>).</li>
+        <li>Garantiza que <b>cada trabajador solo atienda una moto por bloque horario</b>; el horario se llena cuando todos están ocupados.</li>
         <li>Al cancelar una reserva, <code>activa</code> pasa a <code>false</code> y el cupo <b>se libera</b>.</li>
-        <li>Si dos personas reservan el mismo bloque a la vez, MongoDB rechaza la segunda (error <code>11000</code>) y la API responde <b>409 Conflict</b>.</li>
+        <li>Si dos personas reservan el mismo bloque a la vez, la API reintenta asignando otro trabajador disponible.</li>
       </ul>
     </div>
     <div class="cardinfo">

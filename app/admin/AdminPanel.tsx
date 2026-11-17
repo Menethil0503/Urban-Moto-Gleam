@@ -54,6 +54,7 @@ const COLOR_ESTADO: Record<EstadoReserva, string> = {
 };
 
 type RangoRapido = "todas" | "hoy" | "manana" | "semana" | "mes";
+type TrabajadorAdmin = { id: string; nombre: string; activo: boolean };
 
 const ETIQUETAS_RANGO: Record<RangoRapido, string> = {
   todas: "Todas",
@@ -122,6 +123,9 @@ export function AdminPanel() {
   const [actualizandoId, setActualizandoId] = useState<string | null>(null);
   const [sembrando, setSembrando] = useState(false);
   const [ultimaActualizacion, setUltimaActualizacion] = useState("");
+  const [trabajadores, setTrabajadores] = useState<TrabajadorAdmin[]>([]);
+  const [nuevoTrabajador, setNuevoTrabajador] = useState("");
+  const [guardandoTrabajador, setGuardandoTrabajador] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -173,6 +177,58 @@ export function AdminPanel() {
 
     return () => clearInterval(intervalo);
   }, [cargar]);
+
+  const cargarTrabajadores = useCallback(async () => {
+    const respuesta = await fetch("/api/admin/trabajadores", { cache: "no-store" });
+    if (respuesta.status === 401) {
+      router.replace("/admin/login?next=/admin");
+      return;
+    }
+    const datos = await respuesta.json();
+    if (respuesta.ok) setTrabajadores(datos.trabajadores ?? []);
+  }, [router]);
+
+  useEffect(() => {
+    void cargarTrabajadores();
+  }, [cargarTrabajadores]);
+
+  const registrarTrabajador = async (evento: React.FormEvent) => {
+    evento.preventDefault();
+    setGuardandoTrabajador(true);
+    try {
+      const respuesta = await fetch("/api/admin/trabajadores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevoTrabajador }),
+      });
+      const datos = await respuesta.json();
+      if (!respuesta.ok) {
+        toast({ title: "No se pudo registrar", description: datos.error, status: "error", duration: 4000, isClosable: true });
+        return;
+      }
+      setNuevoTrabajador("");
+      await cargarTrabajadores();
+      toast({ title: "Trabajador registrado", status: "success", duration: 2500, isClosable: true });
+    } catch {
+      toast({ title: "Error de conexión", status: "error", duration: 4000, isClosable: true });
+    } finally {
+      setGuardandoTrabajador(false);
+    }
+  };
+
+  const cambiarDisponibilidadTrabajador = async (trabajador: TrabajadorAdmin) => {
+    const respuesta = await fetch(`/api/admin/trabajadores/${trabajador.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activo: !trabajador.activo }),
+    });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) {
+      toast({ title: "No se pudo actualizar", description: datos.error, status: "error", duration: 4000, isClosable: true });
+      return;
+    }
+    setTrabajadores((previos) => previos.map((item) => item.id === trabajador.id ? datos.trabajador : item));
+  };
 
   /** Aplica un rango de fecha predefinido. */
   const aplicarRango = (rango: RangoRapido) => {
@@ -380,6 +436,42 @@ export function AdminPanel() {
           </Stat>
         </SimpleGrid>
 
+        <Box bg="rgba(10,15,30,0.6)" borderRadius="2xl" p={{ base: 4, md: 5 }} border="1px solid rgba(0,191,255,0.15)" mb={6}>
+          <Heading size="md" mb={4}>Trabajadores</Heading>
+          <form onSubmit={registrarTrabajador}>
+            <HStack mb={4} align="start">
+              <Input
+                value={nuevoTrabajador}
+                onChange={(evento) => setNuevoTrabajador(evento.target.value)}
+                placeholder="Nombre del trabajador"
+                maxLength={80}
+                bg="rgba(10,15,30,0.8)"
+                borderColor="rgba(120,166,255,0.3)"
+              />
+              <Button type="submit" isLoading={guardandoTrabajador} isDisabled={nuevoTrabajador.trim().length < 2} bg="urban.500" color="urban.950" flexShrink={0}>
+                Agregar
+              </Button>
+            </HStack>
+          </form>
+          {trabajadores.length === 0 ? (
+            <Text color="whiteAlpha.600" fontSize="sm">No hay trabajadores registrados. Agrega quienes atenderán las citas.</Text>
+          ) : (
+            <VStack align="stretch" spacing={2}>
+              {trabajadores.map((trabajador) => (
+                <Flex key={trabajador.id} justify="space-between" align="center" gap={3}>
+                  <HStack>
+                    <Text>{trabajador.nombre}</Text>
+                    <Badge colorScheme={trabajador.activo ? "green" : "gray"}>{trabajador.activo ? "Activo" : "Inactivo"}</Badge>
+                  </HStack>
+                  <Button size="xs" variant="outline" onClick={() => void cambiarDisponibilidadTrabajador(trabajador)}>
+                    {trabajador.activo ? "Desactivar" : "Activar"}
+                  </Button>
+                </Flex>
+              ))}
+            </VStack>
+          )}
+        </Box>
+
         {/* ── Filtros ─────────────────────────────────────────── */}
         <Box bg="rgba(10,15,30,0.6)" borderRadius="2xl" p={{ base: 4, md: 5 }} border="1px solid rgba(0,191,255,0.15)" mb={6}>
           <HStack spacing={2} mb={4} color="urban.300" fontSize="xs" fontWeight="700" letterSpacing="0.1em" textTransform="uppercase">
@@ -554,6 +646,7 @@ export function AdminPanel() {
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)">Cliente</Th>
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)">Moto</Th>
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)">Servicio</Th>
+                          <Th color="urban.300" borderColor="rgba(0,191,255,0.15)">Trabajador</Th>
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)" w="60px">Código</Th>
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)">Estado</Th>
                           <Th color="urban.300" borderColor="rgba(0,191,255,0.15)" w="110px">Acciones</Th>
@@ -592,6 +685,9 @@ export function AdminPanel() {
                                   <Text fontSize="xs" color="whiteAlpha.500" noOfLines={2}>{reserva.observaciones}</Text>
                                 )}
                               </VStack>
+                            </Td>
+                            <Td borderColor="rgba(0,191,255,0.1)">
+                              <Text fontSize="sm">{reserva.trabajador}</Text>
                             </Td>
                             <Td borderColor="rgba(0,191,255,0.1)">
                               <Text fontSize="xs" color="whiteAlpha.600" fontFamily="monospace">{reserva.codigo}</Text>
